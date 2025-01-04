@@ -15,6 +15,11 @@ import (
 	. "github.com/majewsky/gg/internal/test"
 )
 
+func TestZeroValue(t *testing.T) {
+	var zero Option[string]
+	AssertEqual(t, zero, None[string]())
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // core API (methods sorted by name)
 
