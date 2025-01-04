@@ -113,9 +113,13 @@
 package option
 
 import (
+	"database/sql"
+	"database/sql/driver"
 	"encoding/json"
 	"fmt"
 	"iter"
+
+	"github.com/majewsky/gg/internal/hack"
 )
 
 // Option is a type that contains either one or no instances of T.
@@ -289,6 +293,16 @@ func (o Option[T]) Xor(other Option[T]) Option[T] {
 ////////////////////////////////////////////////////////////////////////////////
 // formatting/marshalling support
 
+// These are static assertions that Option implements the intended interfaces.
+// (The YAML interfaces are not checked because we don't want to add 3rd-party lib deps here.)
+var (
+	_ fmt.Formatter    = Option[bool]{}
+	_ sql.Scanner      = &Option[bool]{}
+	_ driver.Valuer    = Option[bool]{}
+	_ json.Marshaler   = Option[bool]{}
+	_ json.Unmarshaler = &Option[bool]{}
+)
+
 // Format implements the fmt.Formatter interface.
 //
 // If there is a contained value, it will be formatted as if it was given directly.
@@ -311,7 +325,33 @@ type yamlMarshaler interface {
 	MarshalYAML() (any, error)
 }
 
-// MarshalJSON implements the json.Marshaler interface.
+// Scan implements the database/sql.Scanner interface.
+func (o *Option[T]) Scan(src any) error {
+	switch src := src.(type) {
+	case nil:
+		*o = None[T]()
+		return nil
+	default:
+		var data T
+		err := hack.ConvertAssign(&data, src)
+		if err != nil {
+			return err
+		}
+		*o = Some(data)
+		return nil
+	}
+}
+
+// Value implements the database/sql/driver.Valuer interface.
+func (o Option[T]) Value() (driver.Value, error) {
+	if o.isSome {
+		return driver.DefaultParameterConverter.ConvertValue(o.value)
+	} else {
+		return nil, nil
+	}
+}
+
+// MarshalJSON implements the encoding/json.Marshaler interface.
 func (o Option[T]) MarshalJSON() ([]byte, error) {
 	if o.isSome {
 		return json.Marshal(o.value)
@@ -320,7 +360,7 @@ func (o Option[T]) MarshalJSON() ([]byte, error) {
 	}
 }
 
-// UnmarshalJSON implements the json.Unmarshaler interface.
+// UnmarshalJSON implements the encoding/json.Unmarshaler interface.
 func (o *Option[T]) UnmarshalJSON(buf []byte) error {
 	var data *T
 	err := json.Unmarshal(buf, &data)
@@ -331,7 +371,7 @@ func (o *Option[T]) UnmarshalJSON(buf []byte) error {
 	return nil
 }
 
-// MarshalYAML implements the yaml.Marshaler interface.
+// MarshalYAML implements the yaml.Marshaler interface from gopkg.in/yaml.v2 and v3.
 func (o Option[T]) MarshalYAML() (any, error) {
 	if o.isSome {
 		// If we just return o.value directly here, MarshalYAML will not be called
@@ -347,9 +387,9 @@ func (o Option[T]) MarshalYAML() (any, error) {
 	}
 }
 
-// UnmarshalYAML implements the yaml.Unmarshaler interface.
+// UnmarshalYAML implements the yaml.Unmarshaler interface from gopkg.in/yaml.v2.
 //
-// This function signature is compatible with both v2 and v3 of github.com/go-yaml/yaml,
+// gopkg.in/yaml.v3 supports this interface via backwards-compatibility,
 // so we intentionally do not use the v3-only signature that refers to the yaml.Node type.
 func (o *Option[T]) UnmarshalYAML(unmarshal func(any) error) error {
 	var data *T

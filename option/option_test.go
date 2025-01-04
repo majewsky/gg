@@ -146,6 +146,35 @@ func TestFormat(t *testing.T) {
 	AssertEqual(t, fmt.Sprintf("value is %#v", listOfOptions), "value is []option.Option[int]{<none>, 42}")
 }
 
+func TestMarshalSQL(t *testing.T) {
+	value, err := None[string]().Value()
+	AssertEqual(t, err, nil)
+	AssertEqual(t, value, nil)
+
+	value, err = Some("hello").Value()
+	AssertEqual(t, err, nil)
+	AssertEqual(t, value, "hello")
+
+	_, err = Some(struct{}{}).Value()
+	AssertEqual(t, err.Error(), "unsupported type struct {}, a struct")
+}
+
+func TestUnmarshalSQL(t *testing.T) {
+	var o1 Option[string]
+	err := o1.Scan(nil)
+	AssertEqual(t, err, nil)
+	AssertEqual(t, o1, None[string]())
+
+	var o2 Option[string]
+	err = o2.Scan("hello")
+	AssertEqual(t, err, nil)
+	AssertEqual(t, o2, Some("hello"))
+
+	var o3 Option[struct{}]
+	err = o3.Scan("hello")
+	AssertEqual(t, err.Error(), "unsupported Scan, storing driver.Value type string into type *struct {}")
+}
+
 func TestMarshalAndUnmarshalJSON(t *testing.T) {
 	type payload struct {
 		N1 Option[int] `json:"n1"`
