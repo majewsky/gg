@@ -124,6 +124,7 @@ import (
 
 // Option is a type that contains either one or no instances of T.
 type Option[T any] struct {
+	// NOTE: `None()` must yield the zero value of this type.
 	value  T
 	isSome bool
 }
