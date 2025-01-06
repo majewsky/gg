@@ -118,8 +118,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"iter"
-
-	"github.com/majewsky/gg/internal/hack"
 )
 
 // Option is a type that contains either one or no instances of T.
@@ -328,19 +326,18 @@ type yamlMarshaler interface {
 
 // Scan implements the database/sql.Scanner interface.
 func (o *Option[T]) Scan(src any) error {
-	switch src := src.(type) {
-	case nil:
-		*o = None[T]()
-		return nil
-	default:
-		var data T
-		err := hack.ConvertAssign(&data, src)
-		if err != nil {
-			return err
-		}
-		*o = Some(data)
-		return nil
+	var data sql.Null[T]
+	err := data.Scan(src)
+	if err != nil {
+		return err
 	}
+
+	if data.Valid {
+		*o = Some(data.V)
+	} else {
+		*o = None[T]()
+	}
+	return nil
 }
 
 // Value implements the database/sql/driver.Valuer interface.
