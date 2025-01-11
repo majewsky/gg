@@ -20,3 +20,11 @@ func FromPointer[T any](value *T) Option[T] {
 		return Some(*value)
 	}
 }
+
+// IsNoneOrZero returns whether the Option is either empty, or contains a zero value.
+func IsNoneOrZero[T comparable](o Option[T]) bool {
+	return o.IsNoneOr(func(value T) bool {
+		var zero T
+		return zero == value
+	})
+}

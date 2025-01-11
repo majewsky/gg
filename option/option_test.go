@@ -33,11 +33,12 @@ func TestAsSlice(t *testing.T) {
 	AssertEqual(t, Some(42).AsSlice(), []int{42})
 }
 
-func TestFilter(t *testing.T) {
-	isEven := func(x int) bool {
-		return x%2 == 0
-	}
+func isEven(x int) bool {
+	// an example predicate for testing the various functions that take predicates
+	return x%2 == 0
+}
 
+func TestFilter(t *testing.T) {
 	AssertEqual(t, None[int]().Filter(isEven), None[int]())
 	AssertEqual(t, Some(41).Filter(isEven), None[int]())
 	AssertEqual(t, Some(42).Filter(isEven), Some(42))
@@ -48,9 +49,21 @@ func TestIsNone(t *testing.T) {
 	AssertEqual(t, Some(42).IsNone(), false)
 }
 
+func TestIsNoneOr(t *testing.T) {
+	AssertEqual(t, None[int]().IsNoneOr(isEven), true)
+	AssertEqual(t, Some(41).IsNoneOr(isEven), false)
+	AssertEqual(t, Some(42).IsNoneOr(isEven), true)
+}
+
 func TestIsSome(t *testing.T) {
 	AssertEqual(t, None[int]().IsSome(), false)
 	AssertEqual(t, Some(42).IsSome(), true)
+}
+
+func TestIsSomeAnd(t *testing.T) {
+	AssertEqual(t, None[int]().IsSomeAnd(isEven), false)
+	AssertEqual(t, Some(41).IsSomeAnd(isEven), false)
+	AssertEqual(t, Some(42).IsSomeAnd(isEven), true)
 }
 
 func TestIsZero(t *testing.T) {

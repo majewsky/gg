@@ -203,6 +203,8 @@ func (o Option[T]) IsSomeAnd(predicate func(T) bool) bool {
 }
 
 // IsNoneOr returns whether the Option is either empty, or contains a value that matches the given predicate.
+//
+// If the predicate compares against the zero value, use options.IsNoneOrZero() instead.
 func (o Option[T]) IsNoneOr(predicate func(T) bool) bool {
 	return !o.isSome || predicate(o.value)
 }

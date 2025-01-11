@@ -17,3 +17,9 @@ func TestFromPointer(t *testing.T) {
 	AssertEqual(t, FromPointer[int](nil), None[int]())
 	AssertEqual(t, FromPointer(PointerTo[int](42)), Some(42))
 }
+
+func TestIsNoneOrZero(t *testing.T) {
+	AssertEqual(t, IsNoneOrZero(None[int]()), true)
+	AssertEqual(t, IsNoneOrZero(Some(0)), true)
+	AssertEqual(t, IsNoneOrZero(Some(1)), false)
+}
