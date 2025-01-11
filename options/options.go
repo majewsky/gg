@@ -21,10 +21,19 @@ func FromPointer[T any](value *T) Option[T] {
 	}
 }
 
-// IsNoneOrZero returns whether the Option is either empty, or contains a zero value.
+// IsNoneOrZero returns whether o is either empty, or contains a zero value.
 func IsNoneOrZero[T comparable](o Option[T]) bool {
 	return o.IsNoneOr(func(value T) bool {
 		var zero T
 		return zero == value
 	})
+}
+
+// Map applies the given function to the value contained in o, if there is one.
+func Map[T, U any](o Option[T], mapping func(T) U) Option[U] {
+	if t, ok := o.Unpack(); ok {
+		return Some(mapping(t))
+	} else {
+		return None[U]()
+	}
 }
