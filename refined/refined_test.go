@@ -20,7 +20,7 @@ var accountNameRx = regexp.MustCompile(`^[a-z_][a-z0-9_]*$`)
 
 // Full demonstration of a refinement type for the test.
 type AccountName struct {
-	refined.Value[AccountName, AccountName, string]
+	refined.Value[AccountName, string]
 }
 
 // Demonstration of a struct containing a refinement type.
@@ -34,9 +34,12 @@ func (AccountName) MatchesValue(value string) error {
 }
 
 // Build implements the refined.Builder interface.
-func (AccountName) Build(value string, v refined.Verification) AccountName {
-	return AccountName{refined.Build[AccountName](value, v)}
+func (AccountName) Build(v refined.Prevalue[AccountName, string]) AccountName {
+	return AccountName{refined.Build(v)}
 }
+
+// Example for how to use Literal() to declare a pseudo-const value.
+var reservedAccountName = refined.Literal[AccountName]("reserved")
 
 // Example for how to access the contained value in computations.
 func (n AccountName) ContainerName() string {

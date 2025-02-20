@@ -11,20 +11,10 @@ import (
 	"regexp"
 )
 
-type Builder[T any, V any] interface {
+type ValueType[Self any, T any] interface {
 	MatchesValue(T) error
-	Build(T, Verification) V
+	Build(Prevalue[Self, T]) Self
 }
-
-type Verification interface {
-	isVerification(verificationSeal)
-}
-
-type verification struct{}
-
-type verificationSeal struct{}
-
-func (verification) isVerification(_ verificationSeal) {}
 
 // Building block for writing MatchesValue() implementations.
 func RegexpMatch(rx *regexp.Regexp, value string) error {
