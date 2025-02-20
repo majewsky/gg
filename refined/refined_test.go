@@ -20,7 +20,7 @@ var accountNameRx = regexp.MustCompile(`^[a-z_][a-z0-9_]*$`)
 
 // Full demonstration of a refinement type for the test.
 type AccountName struct {
-	refined.Value[AccountName, string]
+	refined.Value[AccountName, AccountName, string]
 }
 
 // Demonstration of a struct containing a refinement type.
@@ -28,19 +28,19 @@ type AccountData struct {
 	Name AccountName
 }
 
-func NewAccountName(value string) (AccountName, error) {
-	v, err := refined.NewValue[AccountName](value)
-	return AccountName{v}, err
-}
-
-// MatchesValue implements the refined.Condition interface.
+// MatchesValue implements the refined.Builder interface.
 func (AccountName) MatchesValue(value string) error {
 	return refined.RegexpMatch(accountNameRx, value)
 }
 
+// Build implements the refined.Builder interface.
+func (AccountName) Build(value string, v refined.Verification) AccountName {
+	return AccountName{refined.Build[AccountName](value, v)}
+}
+
 // Example for how to access the contained value in computations.
 func (n AccountName) ContainerName() string {
-	return fmt.Sprintf("container-for-%s", n.Get())
+	return fmt.Sprintf("container-for-%s", n.Raw())
 }
 
 func TestAccountName(t *testing.T) {
@@ -48,7 +48,7 @@ func TestAccountName(t *testing.T) {
 	var d1 AccountData
 	err := json.Unmarshal(buf1, &d1)
 	AssertEqual(t, err, error(nil))
-	AssertEqual(t, d1.Name.Get(), "foo")
+	AssertEqual(t, d1.Name.Raw(), "foo")
 
 	// TODO: fails because we need specialized unmarshaling logic on type AccountData
 	buf2 := []byte(`{}`)
