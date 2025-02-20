@@ -38,9 +38,6 @@ func (AccountName) Build(v refined.Prevalue[AccountName, string]) AccountName {
 	return AccountName{refined.Build(v)}
 }
 
-// Example for how to use Literal() to declare a pseudo-const value.
-var reservedAccountName = refined.Literal[AccountName]("reserved")
-
 // Example for how to access the contained value in computations.
 func (n AccountName) ContainerName() string {
 	return fmt.Sprintf("container-for-%s", n.Raw())
@@ -58,4 +55,18 @@ func TestAccountName(t *testing.T) {
 	var d2 AccountData
 	err = json.Unmarshal(buf2, &d2)
 	AssertEqual(t, err.Error(), "foo")
+}
+
+func TestRefinedMapKeys(t *testing.T) {
+	var (
+		foo = refined.Literal[AccountName]("foo")
+		bar = refined.Literal[AccountName]("bar")
+	)
+	m := map[AccountName]int{
+		foo: 3,
+		bar: 1,
+	}
+	// TODO: AccountName is not an ordered type; we might need stuff like slices.Sorted() in package refined
+	// AssertEqual(slices.Sorted(maps.Keys(m)), []AccountName{bar, foo})
+	_ = m
 }
