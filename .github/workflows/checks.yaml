@@ -1,0 +1,50 @@
+# SPDX-FileCopyrightText: 2025 Stefan Majewsky <majewsky@gmx.net>
+# SPDX-License-Identifier: Apache-2.0
+
+name: Checks
+"on":
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ '*' ]
+  workflow_dispatch: {}
+permissions:
+  checks: write
+  contents: read
+jobs:
+  checks:
+    name: Checks
+    runs-on: ubuntu-latest
+    steps:
+
+      ####################
+      ### Setup Phase
+
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          check-latest: true
+          go-version: stable
+
+      ####################
+      # Static Tests
+
+      - name: Run golangci-lint
+        uses: golangci/golangci-lint-action@v8
+        with:
+          version: latest
+
+      ####################
+      # Test Suite
+
+      - name: Run tests
+        run: go test -shuffle=on -coverprofile=cover.out -covermode=count ./...
+      - name: Upload coverage report to Coveralls
+        env:
+          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GIT_BRANCH: ${{ github.head_ref }}
+        run: |
+          go install github.com/mattn/goveralls@latest
+          goveralls -service=github -coverprofile=cover.out
