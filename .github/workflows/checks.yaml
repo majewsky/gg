@@ -35,6 +35,8 @@ jobs:
         uses: golangci/golangci-lint-action@v8
         with:
           version: latest
+      - name: REUSE Compliance Check
+        uses: fsfe/reuse-action@v5
 
       ####################
       # Test Suite

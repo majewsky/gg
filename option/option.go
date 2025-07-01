@@ -1,8 +1,5 @@
-/*******************************************************************************
-* Copyright 2025 Stefan Majewsky <majewsky@gmx.net>
-* SPDX-License-Identifier: Apache-2.0
-* Refer to the file "LICENSE" for details.
-*******************************************************************************/
+// SPDX-FileCopyrightText: 2025 Stefan Majewsky <majewsky@gmx.net>
+// SPDX-License-Identifier: Apache-2.0
 
 // Package optional provides an Option type for Go.
 // A value of the Option type will be in one of two states: "Some" (containing a value) or "None" (containing no value).

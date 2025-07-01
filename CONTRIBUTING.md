@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2025 Stefan Majewsky <majewsky@gmx.net>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # Notes for contributors
 
 This repository accepts contributions as follows:

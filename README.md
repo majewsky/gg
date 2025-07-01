@@ -1,3 +1,8 @@
+<!--
+SPDX-FileCopyrightText: 2025 Stefan Majewsky <majewsky@gmx.net>
+SPDX-License-Identifier: Apache-2.0
+-->
+
 # gg (Generic Generics)
 
 A Go library for the generic types that should be in the standard library, but aren't.
