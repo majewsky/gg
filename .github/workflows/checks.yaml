@@ -42,11 +42,11 @@ jobs:
       # Test Suite
 
       - name: Run tests
-        run: go test -shuffle=on -coverprofile=cover.out -covermode=count ./...
+        run: go test -shuffle=on -coverprofile=build/cover.out -covermode=count ./...
       - name: Upload coverage report to Coveralls
         env:
           COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GIT_BRANCH: ${{ github.head_ref }}
         run: |
           go install github.com/mattn/goveralls@latest
-          goveralls -service=github -coverprofile=cover.out
+          goveralls -service=github -coverprofile=build/cover.out

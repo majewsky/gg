@@ -6,6 +6,7 @@ SPDX-PackageDownloadLocation = "https://github.com/majewsky/gg"
 
 [[annotations]]
 path = [
+  ".gitignore",
   "go.mod",
 ]
 SPDX-FileCopyrightText = "Stefan Majewsky <majewsky@gmx.net>"
