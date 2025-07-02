@@ -3,10 +3,26 @@
 
 package refined
 
-type Struct[P any] struct {
-	Has P
+import "encoding/json"
+
+type Struct[T any] struct {
+	Has T
 }
 
-func NewStruct[P any](payload P) Struct[P] {
-	return Struct[P]{Has: payload}
+func NewStruct[T any](attributes T) Struct[T] {
+	return Struct[T]{Has: attributes}
+}
+
+func (s Struct[T]) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.Has)
+}
+
+func (s *Struct[T]) UnmarshalJSON(buf []byte) error {
+	err := json.Unmarshal(buf, &s.Has)
+	if err != nil {
+		return err
+	}
+
+	// TODO reflect on the fields of s.Has; if any are refined.Value that are not occupied, attempt to fill the zero value through Refine()
+	return nil
 }

@@ -4,9 +4,8 @@
 package refined
 
 import (
-	"cmp"
+	"encoding/json"
 	"errors"
-	"regexp"
 
 	. "github.com/majewsky/gg/option"
 )
@@ -21,52 +20,61 @@ func (s Scalar[S, V]) Raw() V {
 
 func New[S IsAScalar[S, V], V any](value V) (S, error) {
 	var empty S
-	return empty.Refine(Challenge[S, V]{Value: value, valid: true})
+	if empty.RefinedMatch(value) {
+		return empty.RefinedBuild(PreScalar[S, V]{value: Some(value)}), nil
+	} else {
+		return empty, errors.New("TODO 2")
+	}
 }
 
 func Literal[S IsAScalar[S, V], V any](value V) S {
-	var empty S
-	s, err := empty.Refine(Challenge[S, V]{Value: value, valid: true})
+	s, err := New[S, V](value)
 	if err != nil {
-		panic("TODO 2")
+		panic(err.Error())
 	}
 	return s
 }
 
+func (s Scalar[S, V]) MarshalJSON() ([]byte, error) {
+	return json.Marshal(s.Raw())
+}
+
+func (s *Scalar[S, V]) UnmarshalJSON(buf []byte) error {
+	var value V
+	err := json.Unmarshal(buf, &value)
+	if err != nil {
+		return err
+	}
+
+	// We cannot directly call `New[S, V](value)` here because we cannot prove statically
+	// that `S` satisfies `IsAScalar[S, V]`.
+	var empty S
+	if r, ok := any(empty).(IsAScalar[S, V]); ok {
+		if r.RefinedMatch(value) {
+			*s = Scalar[S, V]{value: Some(value)}
+			return nil
+		} else {
+			return errors.New("TODO 3")
+		}
+	} else {
+		return errors.New("TODO 4")
+	}
+}
+
 type IsAScalar[S any, V any] interface {
-	Refine(Challenge[S, V]) (S, error)
+	// We need both steps separately. New() wants to have an S at the end, which goes through both steps.
+	// But Unmarshal...() wants to obtain a Scalar[S, V], so it only wants to use the first step.
+	RefinedMatch(V) bool
+	RefinedBuild(PreScalar[S, V]) S
 }
 
-type Challenge[S any, V any] struct {
-	Value V
-	valid bool
+type PreScalar[S any, V any] struct {
+	value Option[V]
 }
 
-func (c Challenge[S, V]) Accept() Scalar[S, V] {
-	if !c.valid {
-		panic("broken Challenge object")
+func (p PreScalar[S, V]) Into() Scalar[S, V] {
+	if p.value.IsNone() {
+		panic("broken PreScalar object")
 	}
-	return Scalar[S, V]{value: Some(c.Value)}
-}
-
-func RangeCheck[S any, V cmp.Ordered](c Challenge[S, V], minimum, maximum V) (Scalar[S, V], error) {
-	if minimum <= maximum && c.Value >= minimum && c.Value <= maximum {
-		return c.Accept(), nil
-	}
-	return Scalar[S, V]{}, errors.New("TODO 3")
-}
-
-func RegexpCheck[S any, V ~string](c Challenge[S, V], rx *regexp.Regexp) (Scalar[S, V], error) {
-	if rx.MatchString(string(c.Value)) {
-		return c.Accept(), nil
-	}
-	return Scalar[S, V]{}, errors.New("TODO 4")
-}
-
-func NotZeroCheck[S any, V comparable](c Challenge[S, V]) (Scalar[S, V], error) {
-	var zero V
-	if c.Value != zero {
-		return c.Accept(), nil
-	}
-	return Scalar[S, V]{}, errors.New("TODO 5")
+	return Scalar[S, V](p)
 }
