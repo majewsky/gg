@@ -12,9 +12,12 @@ static-check: FORCE
 	@printf "\e[1;36m>> reuse lint\e[0m\n"
 	@if ! reuse lint -q; then reuse lint; fi
 
+GO_COVERPKGS := $(shell go list ./... | tr '\n' , | sed 's/,$$//')
+GO_TESTPKGS := $(shell go list -f '{{if or .TestGoFiles .XTestGoFiles}}{{.ImportPath}}{{end}}' ./...)
+
 build/cover.out: FORCE
 	@printf "\e[1;36m>> go test\e[0m\n"
-	go test -shuffle=on -coverprofile=build/cover.out -covermode=count ./...
+	go test -shuffle=on -coverprofile=build/cover.out -covermode=count -coverpkg=$(GO_COVERPKGS) $(GO_TESTPKGS)
 build/cover.html: build/cover.out
 	@printf "\e[1;36m>> go tool cover\e[0m\n"
 	go tool cover -html $< -o $@
