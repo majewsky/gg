@@ -6,7 +6,11 @@ SPDX-License-Identifier: Apache-2.0
 # gg (Generic Generics)
 
 A Go library for the generic types that should be in the standard library, but aren't.
-Currently, this includes [Option](./option/).
+Currently, this includes:
+
+- an [Option](./option/) type similar to the one in Rust, and
+- a [library](./refined/) for defining [refinement types](https://en.wikipedia.org/wiki/Refinement_type).
+
 I may additional types like `Result`, `Either` or `Pair` if:
 
 - there is a compelling usecase for myself, and
