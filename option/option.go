@@ -22,11 +22,11 @@
 //
 // # Marshalling considerations
 //
-// Marshaling into and from YAML using https://github.com/go-yaml/yaml is supported.
+// Marshaling into and from YAML using https://github.com/go-yaml/yaml (or one of its many forks) is supported.
 // The "omitempty" flag works as expected.
 //
 // Marshaling into and from JSON using encoding/json is supported, but the "omitempty" flag does not work.
-// You must use the "omitzero" flag to get the same effect, but note that this flag is only supported by Go 1.24 and newer.
+// You must use the "omitzero" flag to get the same effect.
 //
 // # How to replace pointer types with Option types
 //
@@ -367,7 +367,7 @@ func (o *Option[T]) UnmarshalJSON(buf []byte) error {
 	return nil
 }
 
-// MarshalYAML implements the yaml.Marshaler interface from gopkg.in/yaml.v2 and v3.
+// MarshalYAML implements the yaml.Marshaler interface from gopkg.in/yaml.v2 and v3 as well as their forks.
 func (o Option[T]) MarshalYAML() (any, error) {
 	if o.isSome {
 		// If we just return o.value directly here, MarshalYAML will not be called
@@ -385,7 +385,7 @@ func (o Option[T]) MarshalYAML() (any, error) {
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface from gopkg.in/yaml.v2.
 //
-// gopkg.in/yaml.v3 supports this interface via backwards-compatibility,
+// gopkg.in/yaml.v3 and its forks support this interface via backwards-compatibility,
 // so we intentionally do not use the v3-only signature that refers to the yaml.Node type.
 func (o *Option[T]) UnmarshalYAML(unmarshal func(any) error) error {
 	var data *T
