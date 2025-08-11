@@ -4,19 +4,20 @@
 * Refer to the file "LICENSE" for details.
 *******************************************************************************/
 
-package option
+package test
 
 import (
 	"reflect"
 	"testing"
 )
 
-func AssertEqual[V any](t *testing.T, actual, expected V) {
+func AssertEqual[V any](t *testing.T, actual, expected V) bool {
 	if reflect.DeepEqual(actual, expected) {
-		return
+		return true
 	}
 	t.Helper()
 	t.Errorf("expected %#v, but got %#v", expected, actual)
+	return false
 }
 
 func PointerTo[V any](value V) *V {

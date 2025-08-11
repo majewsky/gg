@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2025 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.2.0 (TBD)
+
+Changes:
+
+- Add package jsonmatch.
+
 # v1.1.0 (2025-04-24)
 
 Changes:

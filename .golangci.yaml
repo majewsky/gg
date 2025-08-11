@@ -42,6 +42,7 @@ linters:
     goconst:
       min-occurrences: 5
     gocritic:
+      disable-all: true
       enabled-checks:
         - boolExprSimplify
         - builtinShadow
