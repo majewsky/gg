@@ -9,6 +9,7 @@ My personal extension of the standard library, mostly containing foundational ge
 
 ## List of packages
 
+- [assetembed](./assetembed/): HTTP handler for efficiently serving embedded assets using the cache-busting pattern
 - [jsonmatch](./jsonmatch/): matching of encoded JSON payloads against fixed assertions
 - [option](./option/): an Option type with strong isolation
 - [options](./options/): additional functions for type Option
