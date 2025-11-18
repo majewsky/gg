@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2025 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.4.0 (TBD)
+
+Changes:
+
+- Add `jsonmatch.Diff.String()`.
+
 # v1.3.0 (2025-08-15)
 
 Changes:
