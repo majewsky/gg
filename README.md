@@ -11,6 +11,7 @@ My personal extension of the standard library, mostly containing foundational ge
 
 - [assetembed](./assetembed/): HTTP handler for efficiently serving embedded assets using the cache-busting pattern
 - [jsonmatch](./jsonmatch/): matching of encoded JSON payloads against fixed assertions
+- [is](./is/): binary operations that are expressed in a curried style, e.g. `is.LessThan(b)(a) == a < b`, for use with `Option.IsSomeAnd()` etc.
 - [option](./option/): an Option type with strong isolation
 - [options](./options/): additional functions for type Option
 
