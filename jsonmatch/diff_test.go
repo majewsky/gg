@@ -61,11 +61,13 @@ func TestCanonicalizesActualPayload(t *testing.T) {
 		}
 		AssertEqual(t, match.DiffAgainst(message), nil)
 
-		// changing the type of `data` to map[string]any does not change anything at all;
-		// using the jsonmatch.Object name on this level is mostly syntactic sugar to communicate intent
+		// changing the type of `data` to map[string]any and of `data.qux` to []any does not change anything at all;
+		// using the jsonmatch.Object and jsonmatch.Array names on this level is mostly syntactic sugar to communicate intent;
+		//
+		// also, this tests that jsonmatch.Irrelevant() works as expected
 		match = jsonmatch.Object{
 			"data": map[string]any{
-				"foo": 42,
+				"foo": jsonmatch.Irrelevant(),
 				"bar": "hello world",
 				"qux": []any{5, nil, 15},
 			},

@@ -146,6 +146,8 @@ func getDiffsForValue(path []pathElement, expected, actual any) []Diff {
 		return getDiffsForArray(path, downcasted, actual)
 	case capturedField:
 		return getDiffsForCapturedField(path, expected, actual)
+	case irrelevant:
+		return nil
 	case nil:
 		// this case needs to be handled separately because the code below
 		// cannot deal with reflect.TypeOf(expected) returning nil

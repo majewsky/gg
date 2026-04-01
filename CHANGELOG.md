@@ -1,7 +1,14 @@
 <!--
-SPDX-FileCopyrightText: 2025 Stefan Majewsky <majewsky@gmx.net>
+SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
+
+# v1.6.0 (2026-04-01)
+
+Changes:
+
+- Add `jsonmatch.Irrelevant()`.
+- Fix recursion into `jsonmatch.Array` during `DiffAgainst()`.
 
 # v1.5.0 (2025-11-26)
 
