@@ -130,6 +130,8 @@ func getDiffsForValue(path []pathElement, expected, actual any) []Diff {
 		return getDiffsForObject(path, expected, actual)
 	case []any:
 		return getDiffsForArray(path, expected, actual)
+	case Array:
+		return getDiffsForArray(path, expected, actual)
 	case []map[string]any:
 		downcasted := make([]any, len(expected))
 		for idx, val := range expected {

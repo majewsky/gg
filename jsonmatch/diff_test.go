@@ -56,7 +56,7 @@ func TestCanonicalizesActualPayload(t *testing.T) {
 			"data": jsonmatch.Object{
 				"foo": 42,
 				"bar": "hello world",
-				"qux": []any{5, nil, 15},
+				"qux": jsonmatch.Array{5, nil, 15},
 			},
 		}
 		AssertEqual(t, match.DiffAgainst(message), nil)
@@ -389,4 +389,21 @@ type unmarshalableObject struct{}
 
 func (unmarshalableObject) MarshalJSON() ([]byte, error) {
 	return nil, errors.New("this object is unmarshalable")
+}
+
+func TestArrayOnArrayAction(t *testing.T) {
+	message := []byte(`[[1,3]]`) // but we assert against [[1,2]]
+	expected := []jsonmatch.Diff{{
+		Kind:         "value mismatch",
+		Pointer:      "/0/1",
+		ExpectedJSON: "2",
+		ActualJSON:   "3",
+	}}
+
+	match := jsonmatch.Array{[]any{1, 2}}
+	AssertEqual(t, match.DiffAgainst(message), expected)
+
+	// this used to fail before the fix in the commit that added this test
+	match = jsonmatch.Array{jsonmatch.Array{1, 2}}
+	AssertEqual(t, match.DiffAgainst(message), expected)
 }
