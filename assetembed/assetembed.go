@@ -10,7 +10,7 @@
 // User agents will immediately know when to update assets served by the HTTP server
 // because links to those assets will change to refer to a new filename (that includes the hash of the updated file contents).
 // This allows the HTTP handler to serve files with the very efficient "Cache-Control: immutable" caching method.
-package assetembed
+package assetembed // import "go.xyrillian.de/gg/assetembed"
 
 import (
 	"crypto/sha512"
@@ -24,7 +24,7 @@ import (
 	"strings"
 	"time"
 
-	. "github.com/majewsky/gg/option"
+	. "go.xyrillian.de/gg/option"
 )
 
 // Handler serves static asset files, as described in the package documentation.

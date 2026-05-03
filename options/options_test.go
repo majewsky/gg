@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"testing"
 
-	. "github.com/majewsky/gg/internal/test"
-	. "github.com/majewsky/gg/option"
+	. "go.xyrillian.de/gg/internal/test"
+	. "go.xyrillian.de/gg/option"
 )
 
 func TestFromPointer(t *testing.T) {

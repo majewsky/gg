@@ -12,7 +12,7 @@
 //		"net/http"
 //		"net/http/httptest"
 //
-//		"github.com/majewsky/gg/jsonmatch"
+//		"go.xyrillian.de/gg/jsonmatch"
 //	)
 //
 //	func TestJSONMatchOfResponseBody(t*testing.T) {
@@ -128,7 +128,7 @@
 //		},
 //	}.DiffAgainst(resp2.Body.Bytes())
 //	// ...
-package jsonmatch
+package jsonmatch // import "go.xyrillian.de/gg/jsonmatch"
 
 import (
 	"encoding/json"

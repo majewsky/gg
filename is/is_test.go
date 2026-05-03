@@ -7,9 +7,9 @@ import (
 	"testing"
 	"time"
 
-	. "github.com/majewsky/gg/internal/test"
-	"github.com/majewsky/gg/is"
-	. "github.com/majewsky/gg/option"
+	. "go.xyrillian.de/gg/internal/test"
+	"go.xyrillian.de/gg/is"
+	. "go.xyrillian.de/gg/option"
 )
 
 func TestComparable(t *testing.T) {

@@ -106,7 +106,7 @@
 //
 //	dbURL := GetDatabaseURLFromEnvironment().UnwrapOrPanic("no DB connection found")
 //	// ^ This is a much clearer phrasing.
-package option
+package option // import "go.xyrillian.de/gg/option"
 
 import (
 	"database/sql"
@@ -173,6 +173,8 @@ func (o Option[T]) AsSlice() []T {
 }
 
 // Filter removes the contained value (if any) from the Option if it does not match the predicate.
+//
+// See package go.xyrillian.de/gg/is for pre-made predicates.
 func (o Option[T]) Filter(predicate func(T) bool) Option[T] {
 	if o.isSome && predicate(o.value) {
 		return o
@@ -194,6 +196,8 @@ func (o Option[T]) IsSome() bool {
 }
 
 // IsSomeAnd returns whether the Option contains a value that matches the given predicate.
+//
+// See package go.xyrillian.de/gg/is for pre-made predicates.
 func (o Option[T]) IsSomeAnd(predicate func(T) bool) bool {
 	return o.isSome && predicate(o.value)
 }
@@ -201,6 +205,8 @@ func (o Option[T]) IsSomeAnd(predicate func(T) bool) bool {
 // IsNoneOr returns whether the Option is either empty, or contains a value that matches the given predicate.
 //
 // If the predicate compares against the zero value, use options.IsNoneOrZero() instead.
+//
+// See package go.xyrillian.de/gg/is for pre-made predicates.
 func (o Option[T]) IsNoneOr(predicate func(T) bool) bool {
 	return !o.isSome || predicate(o.value)
 }

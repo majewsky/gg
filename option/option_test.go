@@ -9,7 +9,7 @@ import (
 	"slices"
 	"testing"
 
-	. "github.com/majewsky/gg/internal/test"
+	. "go.xyrillian.de/gg/internal/test"
 )
 
 func TestZeroValue(t *testing.T) {

@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.7.0 (TBD)
+
+Changes:
+
+- The library must now be imported from the new module path `go.xyrillian.de/gg`.
+
 # v1.6.0 (2026-04-01)
 
 Changes:

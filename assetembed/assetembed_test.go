@@ -13,9 +13,9 @@ import (
 	"testing/fstest"
 	"time"
 
-	"github.com/majewsky/gg/assetembed"
-	. "github.com/majewsky/gg/internal/test"
-	. "github.com/majewsky/gg/option"
+	"go.xyrillian.de/gg/assetembed"
+	. "go.xyrillian.de/gg/internal/test"
+	. "go.xyrillian.de/gg/option"
 )
 
 func TestAssetembed(t *testing.T) {
