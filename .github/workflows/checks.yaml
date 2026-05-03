@@ -21,9 +21,9 @@ jobs:
       ### Setup Phase
 
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
       - name: Set up Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           check-latest: true
           go-version: stable
@@ -32,21 +32,37 @@ jobs:
       # Static Tests
 
       - name: Run golangci-lint
-        uses: golangci/golangci-lint-action@v8
+        uses: golangci/golangci-lint-action@v9
         with:
           version: latest
       - name: REUSE Compliance Check
-        uses: fsfe/reuse-action@v5
+        uses: fsfe/reuse-action@v6
 
       ####################
       # Test Suite
 
       - name: Run tests
-        run: go test -shuffle=on -coverprofile=build/cover.out -covermode=count ./...
-      - name: Upload coverage report to Coveralls
-        env:
-          COVERALLS_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GIT_BRANCH: ${{ github.head_ref }}
-        run: |
-          go install github.com/mattn/goveralls@latest
-          goveralls -service=github -coverprofile=build/cover.out
+        run: mkdir -p build && go test -shuffle=on -coverprofile=build/cover.out -covermode=count ./...
+      - name: Archive code coverage results
+        uses: actions/upload-artifact@v7
+        with:
+          name: code-coverage
+          path: build/cover.out
+
+  code_coverage:
+    name: Code coverage report
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+    needs: [ checks ]
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      pull-requests: write
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+      - name: Post coverage report
+        uses: fgrosse/go-coverage-report@v1.3.0
+        with:
+          coverage-artifact-name: code-coverage
+          coverage-file-name: cover.out
