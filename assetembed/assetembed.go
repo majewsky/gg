@@ -2,7 +2,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // Package assetembed provides a HTTP handler for serving asset files embedded in a Go binary through the embed.FS type.
-// It is similar in purpose to http.FileServerFS() from the standard library,
+// It is similar in purpose to [http.FileServerFS] from the standard library,
 // but instead of serving files directly with their names as found in the filesystem,
 // it inserts a cryptographic digest of the file contents into the filename that the handler serves.
 //
@@ -34,7 +34,7 @@ type Handler struct {
 	contents      map[string][]byte // e.g. "res/app-e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855.css" -> [contents of res/app.css]
 }
 
-// NewHandler builds a new Handler instance.
+// NewHandler builds a new [Handler] instance.
 // This will read all files in assetFS and store a copy of their contents inside the Handler instance.
 //
 // For filesystems backed by actual disk or network storage, this can be a very expensive operation.
@@ -120,7 +120,7 @@ var cacheControlHeader = fmt.Sprintf(
 	int64((14 * 24 * time.Hour).Seconds()), // max-age = 2 weeks
 )
 
-// ServeHTTP implements the http.Handler interface.
+// ServeHTTP implements the [http.Handler] interface.
 func (h *Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	buf, exists := h.contents[strings.TrimPrefix(r.URL.Path, "/")]
 	if !exists {

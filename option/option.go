@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Stefan Majewsky <majewsky@gmx.net>
 // SPDX-License-Identifier: Apache-2.0
 
-// Package optional provides an Option type for Go.
+// Package option provides an [Option] type for Go.
 // A value of the Option type will be in one of two states: "Some" (containing a value) or "None" (containing no value).
 //
 // The purpose of the Option type is to more clearly distinguish the two situations that standard Go uses pointer types for:
@@ -306,7 +306,7 @@ var (
 	_ json.Unmarshaler = &Option[bool]{}
 )
 
-// Format implements the fmt.Formatter interface.
+// Format implements the [fmt.Formatter] interface.
 //
 // If there is a contained value, it will be formatted as if it was given directly.
 // Otherwise, the string "<none>" will be formatted according to the specified width and flags.
@@ -318,7 +318,7 @@ func (o Option[T]) Format(f fmt.State, verb rune) {
 	}
 }
 
-// IsZero implements the IsZeroer interface as understood by encoding/json and github.com/go-yaml/yaml.
+// IsZero implements the IsZeroer interface as understood by encoding/json, github.com/go-yaml/yaml and github.com/yaml/go-yaml.
 // It is an alias of IsNone().
 func (o Option[T]) IsZero() bool {
 	return !o.isSome
@@ -328,7 +328,7 @@ type yamlMarshaler interface {
 	MarshalYAML() (any, error)
 }
 
-// Scan implements the database/sql.Scanner interface.
+// Scan implements the [sql.Scanner] interface.
 func (o *Option[T]) Scan(src any) error {
 	var data sql.Null[T]
 	err := data.Scan(src)
@@ -344,7 +344,7 @@ func (o *Option[T]) Scan(src any) error {
 	return nil
 }
 
-// Value implements the database/sql/driver.Valuer interface.
+// Value implements the [driver.Valuer] interface.
 func (o Option[T]) Value() (driver.Value, error) {
 	if o.isSome {
 		return driver.DefaultParameterConverter.ConvertValue(o.value)
@@ -353,7 +353,7 @@ func (o Option[T]) Value() (driver.Value, error) {
 	}
 }
 
-// MarshalJSON implements the encoding/json.Marshaler interface.
+// MarshalJSON implements the [json.Marshaler] interface.
 func (o Option[T]) MarshalJSON() ([]byte, error) {
 	if o.isSome {
 		return json.Marshal(o.value)
@@ -362,7 +362,7 @@ func (o Option[T]) MarshalJSON() ([]byte, error) {
 	}
 }
 
-// UnmarshalJSON implements the encoding/json.Unmarshaler interface.
+// UnmarshalJSON implements the [json.Unmarshaler] interface.
 func (o *Option[T]) UnmarshalJSON(buf []byte) error {
 	var data *T
 	err := json.Unmarshal(buf, &data)
@@ -373,7 +373,7 @@ func (o *Option[T]) UnmarshalJSON(buf []byte) error {
 	return nil
 }
 
-// MarshalYAML implements the yaml.Marshaler interface from gopkg.in/yaml.v2 and v3.
+// MarshalYAML implements the yaml.Marshaler interface from gopkg.in/yaml.v2 and v3 as well as go.yaml.in/yaml/v3.
 func (o Option[T]) MarshalYAML() (any, error) {
 	if o.isSome {
 		// If we just return o.value directly here, MarshalYAML will not be called
@@ -391,8 +391,11 @@ func (o Option[T]) MarshalYAML() (any, error) {
 
 // UnmarshalYAML implements the yaml.Unmarshaler interface from gopkg.in/yaml.v2.
 //
-// gopkg.in/yaml.v3 supports this interface via backwards-compatibility,
-// so we intentionally do not use the v3-only signature that refers to the yaml.Node type.
+// gopkg.in/yaml.v3 and go.yaml.in/yaml/v3 support this interface via backwards-compatibility.
+// We cannot use the v3-only signature that refers to the yaml.Node type,
+// because that would require us to choose only one of either v3 libraries to support.
+//
+// Ref: https://github.com/yaml/go-yaml/issues/56
 func (o *Option[T]) UnmarshalYAML(unmarshal func(any) error) error {
 	var data *T
 	err := unmarshal(&data)
