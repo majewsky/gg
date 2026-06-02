@@ -10,6 +10,7 @@ My personal extension of the standard library, with foundational generic types a
 ## List of packages
 
 - [assetembed](./assetembed/): HTTP handler for efficiently serving embedded assets using the cache-busting pattern
+- [columnar](./columnar/): efficient JSON marshaling of lists of objects in a columnar format
 - [jsonmatch](./jsonmatch/): matching of encoded JSON payloads against fixed assertions
 - [is](./is/): binary operations that are expressed in a curried style, e.g. `is.LessThan(b)(a) == a < b`, for use with `Option.IsSomeAnd()` etc.
 - [option](./option/): an Option type with strong isolation
