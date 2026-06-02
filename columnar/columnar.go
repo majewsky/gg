@@ -26,7 +26,6 @@
 // This package eliminates the boilerplate code that would be associated with
 // converting a list of objects into the respective columnar form before
 // marshaling, and vice versa after unmarshaling.
-
 package columnar
 
 import (

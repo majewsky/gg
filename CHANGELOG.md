@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.8.1 (TBD)
+
+Changes:
+
+- Fix package documentation for columnar missing from pkg.go.dev.
+
 # v1.8.0 (2026-06-02)
 
 Changes:
