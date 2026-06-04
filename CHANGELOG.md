@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.9.0 (TBD)
+
+Changes:
+
+- jsonmatch: Allow embedding custom Diffable instances within Object and Array.
+
 # v1.8.1 (2026-06-02)
 
 Changes:

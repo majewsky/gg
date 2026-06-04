@@ -409,3 +409,37 @@ func TestArrayOnArrayAction(t *testing.T) {
 	match = jsonmatch.Array{jsonmatch.Array{1, 2}}
 	AssertEqual(t, match.DiffAgainst(message), expected)
 }
+
+func TestDispatchIntoCustomDiffable(t *testing.T) {
+	message := []byte(`{"name":"data.json","type":"application/json","content":"{\"foo\":1,\"bar\":3}"}`)
+	match := jsonmatch.Object{
+		"name": "data.json",
+		"type": "application/json",
+		"content": jsonWithinJSONString{jsonmatch.Object{
+			"foo": 1,
+			"bar": 2,
+		}},
+	}
+	expected := []jsonmatch.Diff{{
+		Kind:         "value mismatch",
+		Pointer:      "/content/bar",
+		ExpectedJSON: "2",
+		ActualJSON:   "3",
+	}}
+	AssertEqual(t, match.DiffAgainst(message), expected)
+}
+
+// jsonWithinJSONString appears in TestDispatchIntoCustomDiffable.
+type jsonWithinJSONString struct {
+	inner jsonmatch.Diffable
+}
+
+// DiffAgainst implements the DiffAgainst interface.
+func (j jsonWithinJSONString) DiffAgainst(buf []byte) []jsonmatch.Diff {
+	var s string
+	err := json.Unmarshal(buf, &s)
+	if err != nil {
+		panic(err.Error())
+	}
+	return j.inner.DiffAgainst([]byte(s))
+}
