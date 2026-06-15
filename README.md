@@ -3,32 +3,33 @@ SPDX-FileCopyrightText: 2025 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
-# gg (Generic Generics)
+# gg (Generic Groundwork)
 
-My personal extension of the standard library, with foundational generic types and `net/http` addons.
+My personal extension of the standard library.
 
 ## List of packages
 
-- [assetembed](./assetembed/): HTTP handler for efficiently serving embedded assets using the cache-busting pattern
+### Foundational generic types
+
 - [columnar](./columnar/): efficient JSON marshaling of lists of objects in a columnar format
-- [jsonmatch](./jsonmatch/): matching of encoded JSON payloads against fixed assertions
 - [is](./is/): binary operations that are expressed in a curried style, e.g. `is.LessThan(b)(a) == a < b`, for use with `Option.IsSomeAnd()` etc.
 - [option](./option/): an Option type with strong isolation
 - [options](./options/): additional functions for type Option
 
-## Future developments
+### Addons for net/http
 
-I may add additional types (e.g. `Result`, `Either` or `Pair`) if:
+- [assetembed](./assetembed/): HTTP handler for efficiently serving embedded assets using the cache-busting pattern
 
-- there is a compelling usecase for myself, and
-- I find an API that is ergonomic in practice (this is the biggest reason why `Result` might never happen).
+### Addons for testing
+
+- [jsonmatch](./jsonmatch/): matching of encoded JSON payloads against fixed assertions
 
 ## How to contribute
 
 This repository accepts contributions as follows:
 
 - For new methods and functions, feel free to submit a PR right away.
-- For entirely new types, or when adding library dependencies, please open an issue first to discuss the design.
+- For entirely new types, or when adding library dependencies, please send a mail or open a GitHub issue first to discuss the design.
 - Generally, we dislike library dependencies in this house because every dependency means extra work managing dependency upgrades.
 
 Before sending a patch, please ensure that `make check` does not report any problems, and run `make benchmark` to check the performance impact of your changes.
