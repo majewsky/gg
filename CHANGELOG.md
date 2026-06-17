@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.9.1 (TBD)
+
+Changes:
+
+- Fix columnar choking on structs with `json:"-"` fields.
+
 # v1.9.0 (2026-06-04)
 
 Changes:

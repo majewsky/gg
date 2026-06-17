@@ -116,3 +116,23 @@ func TestJSONUnmarshalFromInconsistentLengths(t *testing.T) {
 	err := json.Unmarshal([]byte(`{"Foo":[1,2],"Bar":[3,4,5]}`), PointerTo(columnar.List[Record]{}))
 	AssertEqual(t, err.Error(), `cannot unmarshal from columns with inconsistent lengths [2 3]`)
 }
+
+func TestIgnoredFields(t *testing.T) {
+	type Record struct {
+		Foo   int `json:"foo"`
+		Bonus int `json:"-"`
+	}
+
+	// There used to be a bug where columnar got confused that the `Bonus` field
+	// ends up as a zero-length array after unmarshaling.
+	testSuccessfulJSONRoundtrip(t,
+		[]Record{
+			{Foo: 1, Bonus: 0},
+			{Foo: 2, Bonus: 0},
+			{Foo: 3, Bonus: 0},
+		},
+		jsonmatch.Object{
+			"foo": jsonmatch.Array{1, 2, 3},
+		},
+	)
+}

@@ -59,7 +59,7 @@ type List[T any] []T
 func foreachRelevantField(t reflect.Type, action func(f reflect.StructField)) {
 	for idx := range t.NumField() {
 		f := t.Field(idx)
-		if f.PkgPath == "" {
+		if f.PkgPath == "" && f.Tag.Get("json") != "-" {
 			action(f)
 		}
 	}
