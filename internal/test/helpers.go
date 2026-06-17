@@ -19,7 +19,3 @@ func AssertEqual[V any](t *testing.T, actual, expected V) bool {
 	t.Errorf("expected %#v, but got %#v", expected, actual)
 	return false
 }
-
-func PointerTo[V any](value V) *V {
-	return &value
-}

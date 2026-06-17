@@ -57,8 +57,7 @@ var columnarListTypes = map[reflect.Type]reflect.Type{}
 type List[T any] []T
 
 func foreachRelevantField(t reflect.Type, action func(f reflect.StructField)) {
-	for idx := range t.NumField() {
-		f := t.Field(idx)
+	for f := range t.Fields() {
 		if f.PkgPath == "" && f.Tag.Get("json") != "-" {
 			action(f)
 		}

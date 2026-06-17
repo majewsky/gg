@@ -22,7 +22,7 @@ func TestZeroValue(t *testing.T) {
 
 func TestAsPointer(t *testing.T) {
 	AssertEqual(t, None[int]().AsPointer(), nil)
-	AssertEqual(t, Some(42).AsPointer(), PointerTo(42))
+	AssertEqual(t, Some(42).AsPointer(), new(42))
 }
 
 func TestAsSlice(t *testing.T) {

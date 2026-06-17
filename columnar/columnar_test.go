@@ -84,9 +84,9 @@ func TestJSONRoundtripResolvesPointers(t *testing.T) {
 	}
 	testSuccessfulJSONRoundtrip(t,
 		[]***Record{
-			PointerTo(PointerTo(PointerTo(Record{1, 2}))),
-			PointerTo(PointerTo(PointerTo(Record{2, 4}))),
-			PointerTo(PointerTo(PointerTo(Record{3, 6}))),
+			new(new(new(Record{1, 2}))),
+			new(new(new(Record{2, 4}))),
+			new(new(new(Record{3, 6}))),
 		},
 		jsonmatch.Object{
 			"Foo": jsonmatch.Array{1, 2, 3},
@@ -103,7 +103,7 @@ func TestJSONRoundtripErrors(t *testing.T) {
 
 	_, err := json.Marshal(columnar.List[nothingPublic]{{1, 2}})
 	AssertEqual(t, err.Error(), `json: error calling MarshalJSON for type columnar.List[go.xyrillian.de/gg/columnar_test.nothingPublic·5]: columnar_test.nothingPublic has no exported fields`)
-	err = json.Unmarshal([]byte(`{}`), PointerTo(columnar.List[nothingPublic]{}))
+	err = json.Unmarshal([]byte(`{}`), new(columnar.List[nothingPublic]{}))
 	AssertEqual(t, err.Error(), `columnar_test.nothingPublic has no exported fields`)
 }
 
@@ -113,7 +113,7 @@ func TestJSONUnmarshalFromInconsistentLengths(t *testing.T) {
 		Bar int
 	}
 
-	err := json.Unmarshal([]byte(`{"Foo":[1,2],"Bar":[3,4,5]}`), PointerTo(columnar.List[Record]{}))
+	err := json.Unmarshal([]byte(`{"Foo":[1,2],"Bar":[3,4,5]}`), new(columnar.List[Record]{}))
 	AssertEqual(t, err.Error(), `cannot unmarshal from columns with inconsistent lengths [2 3]`)
 }
 

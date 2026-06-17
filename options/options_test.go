@@ -13,7 +13,7 @@ import (
 
 func TestFromPointer(t *testing.T) {
 	AssertEqual(t, FromPointer[int](nil), None[int]())
-	AssertEqual(t, FromPointer(PointerTo[int](42)), Some(42))
+	AssertEqual(t, FromPointer(new(int(42))), Some(42))
 }
 
 func TestIsNoneOrZero(t *testing.T) {
