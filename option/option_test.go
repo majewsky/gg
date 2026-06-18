@@ -9,25 +9,25 @@ import (
 	"slices"
 	"testing"
 
-	. "go.xyrillian.de/gg/internal/test"
+	"go.xyrillian.de/gg/assert"
 )
 
 func TestZeroValue(t *testing.T) {
 	var zero Option[string]
-	AssertEqual(t, zero, None[string]())
+	assert.Equal(t, zero, None[string]())
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // core API (methods sorted by name)
 
 func TestAsPointer(t *testing.T) {
-	AssertEqual(t, None[int]().AsPointer(), nil)
-	AssertEqual(t, Some(42).AsPointer(), new(42))
+	assert.Equal(t, None[int]().AsPointer(), nil)
+	assert.Equal(t, Some(42).AsPointer(), new(42))
 }
 
 func TestAsSlice(t *testing.T) {
-	AssertEqual(t, None[int]().AsSlice(), []int(nil))
-	AssertEqual(t, Some(42).AsSlice(), []int{42})
+	assert.Equal(t, None[int]().AsSlice(), []int(nil))
+	assert.Equal(t, Some(42).AsSlice(), []int{42})
 }
 
 func isEven(x int) bool {
@@ -36,49 +36,49 @@ func isEven(x int) bool {
 }
 
 func TestFilter(t *testing.T) {
-	AssertEqual(t, None[int]().Filter(isEven), None[int]())
-	AssertEqual(t, Some(41).Filter(isEven), None[int]())
-	AssertEqual(t, Some(42).Filter(isEven), Some(42))
+	assert.Equal(t, None[int]().Filter(isEven), None[int]())
+	assert.Equal(t, Some(41).Filter(isEven), None[int]())
+	assert.Equal(t, Some(42).Filter(isEven), Some(42))
 }
 
 func TestIsNone(t *testing.T) {
-	AssertEqual(t, None[int]().IsNone(), true)
-	AssertEqual(t, Some(42).IsNone(), false)
+	assert.Equal(t, None[int]().IsNone(), true)
+	assert.Equal(t, Some(42).IsNone(), false)
 }
 
 func TestIsNoneOr(t *testing.T) {
-	AssertEqual(t, None[int]().IsNoneOr(isEven), true)
-	AssertEqual(t, Some(41).IsNoneOr(isEven), false)
-	AssertEqual(t, Some(42).IsNoneOr(isEven), true)
+	assert.Equal(t, None[int]().IsNoneOr(isEven), true)
+	assert.Equal(t, Some(41).IsNoneOr(isEven), false)
+	assert.Equal(t, Some(42).IsNoneOr(isEven), true)
 }
 
 func TestIsSome(t *testing.T) {
-	AssertEqual(t, None[int]().IsSome(), false)
-	AssertEqual(t, Some(42).IsSome(), true)
+	assert.Equal(t, None[int]().IsSome(), false)
+	assert.Equal(t, Some(42).IsSome(), true)
 }
 
 func TestIsSomeAnd(t *testing.T) {
-	AssertEqual(t, None[int]().IsSomeAnd(isEven), false)
-	AssertEqual(t, Some(41).IsSomeAnd(isEven), false)
-	AssertEqual(t, Some(42).IsSomeAnd(isEven), true)
+	assert.Equal(t, None[int]().IsSomeAnd(isEven), false)
+	assert.Equal(t, Some(41).IsSomeAnd(isEven), false)
+	assert.Equal(t, Some(42).IsSomeAnd(isEven), true)
 }
 
 func TestIsZero(t *testing.T) {
-	AssertEqual(t, None[int]().IsZero(), true)
-	AssertEqual(t, Some(42).IsZero(), false)
+	assert.Equal(t, None[int]().IsZero(), true)
+	assert.Equal(t, Some(42).IsZero(), false)
 }
 
 func TestIter(t *testing.T) {
-	AssertEqual(t, slices.Collect(None[int]().Iter()), []int(nil))
-	AssertEqual(t, slices.Collect(Some(42).Iter()), []int{42})
+	assert.Equal(t, slices.Collect(None[int]().Iter()), []int(nil))
+	assert.Equal(t, slices.Collect(Some(42).Iter()), []int{42})
 }
 
 func TestOr(t *testing.T) {
 	none := None[int]()
-	AssertEqual(t, none.Or(none), None[int]())
-	AssertEqual(t, Some(42).Or(none), Some(42))
-	AssertEqual(t, none.Or(Some(43)), Some(43))
-	AssertEqual(t, Some(42).Or(Some(43)), Some(42))
+	assert.Equal(t, none.Or(none), None[int]())
+	assert.Equal(t, Some(42).Or(none), Some(42))
+	assert.Equal(t, none.Or(Some(43)), Some(43))
+	assert.Equal(t, Some(42).Or(Some(43)), Some(42))
 }
 
 func TestOrElse(t *testing.T) {
@@ -92,29 +92,29 @@ func TestOrElse(t *testing.T) {
 		return Some(43)
 	}
 
-	AssertEqual(t, None[int]().OrElse(makeNone), None[int]())
-	AssertEqual(t, callCount, 1)
-	AssertEqual(t, Some(42).OrElse(makeNone), Some(42))
-	AssertEqual(t, callCount, 1)
-	AssertEqual(t, None[int]().OrElse(makeSome), Some(43))
-	AssertEqual(t, callCount, 2)
-	AssertEqual(t, Some(42).OrElse(makeSome), Some(42))
-	AssertEqual(t, callCount, 2)
+	assert.Equal(t, None[int]().OrElse(makeNone), None[int]())
+	assert.Equal(t, callCount, 1)
+	assert.Equal(t, Some(42).OrElse(makeNone), Some(42))
+	assert.Equal(t, callCount, 1)
+	assert.Equal(t, None[int]().OrElse(makeSome), Some(43))
+	assert.Equal(t, callCount, 2)
+	assert.Equal(t, Some(42).OrElse(makeSome), Some(42))
+	assert.Equal(t, callCount, 2)
 }
 
 func TestUnpack(t *testing.T) {
 	val, ok := None[int]().Unpack()
-	AssertEqual(t, val, 0)
-	AssertEqual(t, ok, false)
+	assert.Equal(t, val, 0)
+	assert.Equal(t, ok, false)
 
 	val, ok = Some(42).Unpack()
-	AssertEqual(t, val, 42)
-	AssertEqual(t, ok, true)
+	assert.Equal(t, val, 42)
+	assert.Equal(t, ok, true)
 }
 
 func TestUnwrapOr(t *testing.T) {
-	AssertEqual(t, None[int]().UnwrapOr(5), 5)
-	AssertEqual(t, Some(42).UnwrapOr(5), 42)
+	assert.Equal(t, None[int]().UnwrapOr(5), 5)
+	assert.Equal(t, Some(42).UnwrapOr(5), 42)
 }
 
 func TestUnwrapOrElse(t *testing.T) {
@@ -124,18 +124,18 @@ func TestUnwrapOrElse(t *testing.T) {
 		return 5
 	}
 
-	AssertEqual(t, None[int]().UnwrapOrElse(five), 5)
-	AssertEqual(t, callCount, 1)
-	AssertEqual(t, Some(42).UnwrapOrElse(five), 42)
-	AssertEqual(t, callCount, 1)
+	assert.Equal(t, None[int]().UnwrapOrElse(five), 5)
+	assert.Equal(t, callCount, 1)
+	assert.Equal(t, Some(42).UnwrapOrElse(five), 42)
+	assert.Equal(t, callCount, 1)
 }
 
 func TestXor(t *testing.T) {
 	none := None[int]()
-	AssertEqual(t, none.Xor(none), None[int]())
-	AssertEqual(t, Some(42).Xor(none), Some(42))
-	AssertEqual(t, none.Xor(Some(43)), Some(43))
-	AssertEqual(t, Some(42).Xor(Some(43)), None[int]())
+	assert.Equal(t, none.Xor(none), None[int]())
+	assert.Equal(t, Some(42).Xor(none), Some(42))
+	assert.Equal(t, none.Xor(Some(43)), Some(43))
+	assert.Equal(t, Some(42).Xor(Some(43)), None[int]())
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,49 +145,49 @@ func TestFormat(t *testing.T) {
 	none := None[int]()
 	some := Some(42)
 
-	AssertEqual(t, fmt.Sprintf("value is %d", none), "value is <none>")
-	AssertEqual(t, fmt.Sprintf("value is %d", some), "value is 42")
-	AssertEqual(t, fmt.Sprintf("value is %010d", none), "value is 0000<none>")
-	AssertEqual(t, fmt.Sprintf("value is %010d", some), "value is 0000000042")
+	assert.Equal(t, fmt.Sprintf("value is %d", none), "value is <none>")
+	assert.Equal(t, fmt.Sprintf("value is %d", some), "value is 42")
+	assert.Equal(t, fmt.Sprintf("value is %010d", none), "value is 0000<none>")
+	assert.Equal(t, fmt.Sprintf("value is %010d", some), "value is 0000000042")
 
 	noneList := None[[]int]()
 	someList := Some([]int{4, 2})
-	AssertEqual(t, fmt.Sprintf("value is %v", noneList), "value is <none>")
-	AssertEqual(t, fmt.Sprintf("value is %v", someList), "value is [4 2]")
-	AssertEqual(t, fmt.Sprintf("value is %#v", noneList), "value is <none>")
-	AssertEqual(t, fmt.Sprintf("value is %#v", someList), "value is []int{4, 2}")
+	assert.Equal(t, fmt.Sprintf("value is %v", noneList), "value is <none>")
+	assert.Equal(t, fmt.Sprintf("value is %v", someList), "value is [4 2]")
+	assert.Equal(t, fmt.Sprintf("value is %#v", noneList), "value is <none>")
+	assert.Equal(t, fmt.Sprintf("value is %#v", someList), "value is []int{4, 2}")
 
 	listOfOptions := []Option[int]{none, some}
-	AssertEqual(t, fmt.Sprintf("value is %#v", listOfOptions), "value is []option.Option[int]{<none>, 42}")
+	assert.Equal(t, fmt.Sprintf("value is %#v", listOfOptions), "value is []option.Option[int]{<none>, 42}")
 }
 
 func TestMarshalSQL(t *testing.T) {
 	value, err := None[string]().Value()
-	AssertEqual(t, err, nil)
-	AssertEqual(t, value, nil)
+	assert.Equal(t, err, nil)
+	assert.Equal(t, value, nil)
 
 	value, err = Some("hello").Value()
-	AssertEqual(t, err, nil)
-	AssertEqual(t, value, "hello")
+	assert.Equal(t, err, nil)
+	assert.Equal(t, value, "hello")
 
 	_, err = Some(struct{}{}).Value()
-	AssertEqual(t, err.Error(), "unsupported type struct {}, a struct")
+	assert.Equal(t, err.Error(), "unsupported type struct {}, a struct")
 }
 
 func TestUnmarshalSQL(t *testing.T) {
 	var o1 Option[string]
 	err := o1.Scan(nil)
-	AssertEqual(t, err, nil)
-	AssertEqual(t, o1, None[string]())
+	assert.Equal(t, err, nil)
+	assert.Equal(t, o1, None[string]())
 
 	var o2 Option[string]
 	err = o2.Scan("hello")
-	AssertEqual(t, err, nil)
-	AssertEqual(t, o2, Some("hello"))
+	assert.Equal(t, err, nil)
+	assert.Equal(t, o2, Some("hello"))
 
 	var o3 Option[struct{}]
 	err = o3.Scan("hello")
-	AssertEqual(t, err.Error(), "unsupported Scan, storing driver.Value type string into type *struct {}")
+	assert.Equal(t, err.Error(), "unsupported Scan, storing driver.Value type string into type *struct {}")
 }
 
 func TestMarshalAndUnmarshalJSON(t *testing.T) {
@@ -208,11 +208,11 @@ func TestMarshalAndUnmarshalJSON(t *testing.T) {
 		S3: Some(3),
 	}
 	buf, err := json.Marshal(original)
-	AssertEqual(t, err, nil)
-	AssertEqual(t, string(buf), `{"n1":null,"n2":null,"s1":1,"s2":2,"s3":3}`)
+	assert.Equal(t, err, nil)
+	assert.Equal(t, string(buf), `{"n1":null,"n2":null,"s1":1,"s2":2,"s3":3}`)
 
 	var decoded payload
 	err = json.Unmarshal(buf, &decoded)
-	AssertEqual(t, err, nil)
-	AssertEqual(t, decoded, original)
+	assert.Equal(t, err, nil)
+	assert.Equal(t, decoded, original)
 }

@@ -8,8 +8,8 @@ import (
 	"sync"
 	"testing"
 
+	"go.xyrillian.de/gg/assert"
 	"go.xyrillian.de/gg/columnar"
-	. "go.xyrillian.de/gg/internal/test"
 	"go.xyrillian.de/gg/jsonmatch"
 )
 
@@ -27,7 +27,7 @@ func testSuccessfulJSONRoundtrip[V any](t *testing.T, list []V, encoded jsonmatc
 	if err != nil {
 		t.Fatal(err)
 	}
-	AssertEqual(t, []V(unmarshaled), list)
+	assert.Equal(t, []V(unmarshaled), list)
 }
 
 func TestJSONRoundtripBasic(t *testing.T) {
@@ -102,9 +102,9 @@ func TestJSONRoundtripErrors(t *testing.T) {
 	}
 
 	_, err := json.Marshal(columnar.List[nothingPublic]{{1, 2}})
-	AssertEqual(t, err.Error(), `json: error calling MarshalJSON for type columnar.List[go.xyrillian.de/gg/columnar_test.nothingPublic·5]: columnar_test.nothingPublic has no exported fields`)
+	assert.Equal(t, err.Error(), `json: error calling MarshalJSON for type columnar.List[go.xyrillian.de/gg/columnar_test.nothingPublic·5]: columnar_test.nothingPublic has no exported fields`)
 	err = json.Unmarshal([]byte(`{}`), new(columnar.List[nothingPublic]{}))
-	AssertEqual(t, err.Error(), `columnar_test.nothingPublic has no exported fields`)
+	assert.Equal(t, err.Error(), `columnar_test.nothingPublic has no exported fields`)
 }
 
 func TestJSONUnmarshalFromInconsistentLengths(t *testing.T) {
@@ -114,7 +114,7 @@ func TestJSONUnmarshalFromInconsistentLengths(t *testing.T) {
 	}
 
 	err := json.Unmarshal([]byte(`{"Foo":[1,2],"Bar":[3,4,5]}`), new(columnar.List[Record]{}))
-	AssertEqual(t, err.Error(), `cannot unmarshal from columns with inconsistent lengths [2 3]`)
+	assert.Equal(t, err.Error(), `cannot unmarshal from columns with inconsistent lengths [2 3]`)
 }
 
 func TestIgnoredFields(t *testing.T) {

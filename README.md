@@ -22,7 +22,9 @@ My personal extension of the standard library.
 
 ### Addons for testing
 
+- [assert](./assert/): assertions for use in unit tests, plus a testing harness for test assertions like the ones in this package
 - [jsonmatch](./jsonmatch/): matching of encoded JSON payloads against fixed assertions
+- [testcapture](./testcapture/): execute test code in a way that captures error messages and side effects without failing the overall test (e.g. to unit-test test assertions themselves)
 
 ## How to contribute
 

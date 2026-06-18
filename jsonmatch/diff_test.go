@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	. "go.xyrillian.de/gg/internal/test"
+	"go.xyrillian.de/gg/assert"
 	"go.xyrillian.de/gg/jsonmatch"
 	. "go.xyrillian.de/gg/option"
 )
@@ -59,7 +59,7 @@ func TestCanonicalizesActualPayload(t *testing.T) {
 				"qux": jsonmatch.Array{5, nil, 15},
 			},
 		}
-		AssertEqual(t, match.DiffAgainst(message), nil)
+		assert.Equal(t, match.DiffAgainst(message), nil)
 
 		// changing the type of `data` to map[string]any and of `data.qux` to []any does not change anything at all;
 		// using the jsonmatch.Object and jsonmatch.Array names on this level is mostly syntactic sugar to communicate intent;
@@ -72,7 +72,7 @@ func TestCanonicalizesActualPayload(t *testing.T) {
 				"qux": []any{5, nil, 15},
 			},
 		}
-		AssertEqual(t, match.DiffAgainst(message), nil)
+		assert.Equal(t, match.DiffAgainst(message), nil)
 
 		// this is using subtypes that our logic cannot recurse into
 		// (map[opaqueString]any instead of map[string]any and []Option[int] instead of []any);
@@ -85,7 +85,7 @@ func TestCanonicalizesActualPayload(t *testing.T) {
 				"qux": []Option[int]{Some(5), None[int](), Some(15)},
 			},
 		}
-		AssertEqual(t, match.DiffAgainst(message), nil)
+		assert.Equal(t, match.DiffAgainst(message), nil)
 
 		// this is using a specific struct type instead of a map[string]any, which results in a different serialization
 		// (map[string]any serializes with keys sorted alphabetically, but structs serialize with keys sorted by field declaration order;
@@ -101,14 +101,14 @@ func TestCanonicalizesActualPayload(t *testing.T) {
 				Qux: []Option[int]{Some(5), None[int](), Some(15)},
 			},
 		}
-		AssertEqual(t, match.DiffAgainst(message), nil)
+		assert.Equal(t, match.DiffAgainst(message), nil)
 
 		// to try and trip up the normalization shown above, this match deliberately contains an unmarshalable object;
 		// jsonmatch should recognize that marshaling and unmarshaling does not work and skip the normalization
 		match = jsonmatch.Object{
 			"data": unmarshalableObject{},
 		}
-		AssertEqual(t, match.DiffAgainst(message), []jsonmatch.Diff{{
+		assert.Equal(t, match.DiffAgainst(message), []jsonmatch.Diff{{
 			Kind:         "type mismatch",
 			Pointer:      "/data",
 			ExpectedJSON: `<not marshalable to JSON, %#v is jsonmatch_test.unmarshalableObject{}>`,
@@ -144,10 +144,10 @@ func TestCapturesFields(t *testing.T) {
 		},
 	}
 
-	AssertEqual(t, match.DiffAgainst(message), nil)
-	AssertEqual(t, capturedUUID1, uuid1)
-	AssertEqual(t, capturedUUID2, uuid2)
-	AssertEqual(t, capturedTag1, "bar")
+	assert.Equal(t, match.DiffAgainst(message), nil)
+	assert.Equal(t, capturedUUID1, uuid1)
+	assert.Equal(t, capturedUUID2, uuid2)
+	assert.Equal(t, capturedTag1, "bar")
 
 	// check that CaptureField() complains when unmarshaling JSON messages into incompatible types
 	var (
@@ -166,7 +166,7 @@ func TestCapturesFields(t *testing.T) {
 		},
 	}
 
-	AssertEqual(t, match.DiffAgainst(message), []jsonmatch.Diff{{
+	assert.Equal(t, match.DiffAgainst(message), []jsonmatch.Diff{{
 		Kind:         "cannot unmarshal into capture slot (json: cannot unmarshal string into Go value of type int)",
 		Pointer:      "/objects/0/id",
 		ExpectedJSON: "<capture slot of type *int>",
@@ -198,7 +198,7 @@ func TestCapturesFields(t *testing.T) {
 		},
 	}
 
-	AssertEqual(t, match.DiffAgainst(message), []jsonmatch.Diff{{
+	assert.Equal(t, match.DiffAgainst(message), []jsonmatch.Diff{{
 		Kind:         "value mismatch",
 		Pointer:      "/objects",
 		ActualJSON:   fmt.Sprintf(`[{"id":"%s","tags":["foo"]},{"id":"%s","tags":["bar"]}]`, uuid1, uuid2),
@@ -227,7 +227,7 @@ func TestFailsOnValueMismatch(t *testing.T) {
 		},
 	}
 
-	AssertEqual(t, match.DiffAgainst(message), []jsonmatch.Diff{
+	assert.Equal(t, match.DiffAgainst(message), []jsonmatch.Diff{
 		{
 			Kind:         "value mismatch",
 			Pointer:      "/users/0/name",
@@ -315,10 +315,10 @@ func TestFailsOnTypeMismatch(t *testing.T) {
 			objectMatch := jsonmatch.Object{"payload": tc2.Data}
 			if idx1 == idx2 {
 				// if we chose matching JSON and data types, then everything works as intended
-				AssertEqual(t, objectMatch.DiffAgainst(objectMessage), nil)
+				assert.Equal(t, objectMatch.DiffAgainst(objectMessage), nil)
 			} else {
 				// otherwise we expect a "type mismatch" error
-				AssertEqual(t, objectMatch.DiffAgainst(objectMessage), []jsonmatch.Diff{{
+				assert.Equal(t, objectMatch.DiffAgainst(objectMessage), []jsonmatch.Diff{{
 					Kind:         "type mismatch",
 					Pointer:      "/payload",
 					ActualJSON:   tc1.JSON,
@@ -329,9 +329,9 @@ func TestFailsOnTypeMismatch(t *testing.T) {
 			// type mismatch inside of an array
 			arrayMatch := jsonmatch.Array{1, tc2.Data}
 			if idx1 == idx2 {
-				AssertEqual(t, arrayMatch.DiffAgainst(arrayMessage), nil)
+				assert.Equal(t, arrayMatch.DiffAgainst(arrayMessage), nil)
 			} else {
-				AssertEqual(t, arrayMatch.DiffAgainst(arrayMessage), []jsonmatch.Diff{{
+				assert.Equal(t, arrayMatch.DiffAgainst(arrayMessage), []jsonmatch.Diff{{
 					Kind:         "type mismatch",
 					Pointer:      "/1",
 					ActualJSON:   tc1.JSON,
@@ -342,9 +342,9 @@ func TestFailsOnTypeMismatch(t *testing.T) {
 			// type mismatch for plain scalar
 			if scalarMatch, ok := tc2.Scalar.Unpack(); ok {
 				if idx1 == idx2 {
-					AssertEqual(t, scalarMatch.DiffAgainst(plainMessage), nil)
+					assert.Equal(t, scalarMatch.DiffAgainst(plainMessage), nil)
 				} else {
-					AssertEqual(t, scalarMatch.DiffAgainst(plainMessage), []jsonmatch.Diff{{
+					assert.Equal(t, scalarMatch.DiffAgainst(plainMessage), []jsonmatch.Diff{{
 						Kind:         "type mismatch",
 						Pointer:      "",
 						ActualJSON:   tc1.JSON,
@@ -376,13 +376,13 @@ func TestFailsOnUnmarshalError(t *testing.T) {
 
 	for _, message := range testCases {
 		diffs := match.DiffAgainst(message)
-		if AssertEqual(t, len(diffs), 1) {
+		if assert.Equal(t, len(diffs), 1) {
 			diff := diffs[0]
-			AssertEqual(t, strings.HasPrefix(diff.Kind, "unmarshal error ("), true)
-			AssertEqual(t, strings.HasSuffix(diff.Kind, ")"), true)
-			AssertEqual(t, diff.Pointer, "")
-			AssertEqual(t, diff.ExpectedJSON, `{"data":[23,42]}`)
-			AssertEqual(t, strings.ReplaceAll(diff.ActualJSON, "\uFFFD", ""), strings.ToValidUTF8(string(message), ""))
+			assert.Equal(t, strings.HasPrefix(diff.Kind, "unmarshal error ("), true)
+			assert.Equal(t, strings.HasSuffix(diff.Kind, ")"), true)
+			assert.Equal(t, diff.Pointer, "")
+			assert.Equal(t, diff.ExpectedJSON, `{"data":[23,42]}`)
+			assert.Equal(t, strings.ReplaceAll(diff.ActualJSON, "\uFFFD", ""), strings.ToValidUTF8(string(message), ""))
 		}
 	}
 }
@@ -403,11 +403,11 @@ func TestArrayOnArrayAction(t *testing.T) {
 	}}
 
 	match := jsonmatch.Array{[]any{1, 2}}
-	AssertEqual(t, match.DiffAgainst(message), expected)
+	assert.Equal(t, match.DiffAgainst(message), expected)
 
 	// this used to fail before the fix in the commit that added this test
 	match = jsonmatch.Array{jsonmatch.Array{1, 2}}
-	AssertEqual(t, match.DiffAgainst(message), expected)
+	assert.Equal(t, match.DiffAgainst(message), expected)
 }
 
 func TestDispatchIntoCustomDiffable(t *testing.T) {
@@ -426,7 +426,7 @@ func TestDispatchIntoCustomDiffable(t *testing.T) {
 		ExpectedJSON: "2",
 		ActualJSON:   "3",
 	}}
-	AssertEqual(t, match.DiffAgainst(message), expected)
+	assert.Equal(t, match.DiffAgainst(message), expected)
 }
 
 // jsonWithinJSONString appears in TestDispatchIntoCustomDiffable.

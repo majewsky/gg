@@ -7,7 +7,9 @@ SPDX-License-Identifier: Apache-2.0
 
 Changes:
 
-- The minimum Go version was increased from 1.24 to 1.26.
+- Add packages assert and testcapture.
+- The minimum Go version was increased from 1.24 to 1.26
+  because `assert.TestingTB` covers methods added to `testing.TB` in Go 1.26.
 
 # v1.9.1 (2026-06-17)
 

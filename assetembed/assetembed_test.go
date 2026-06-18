@@ -13,8 +13,8 @@ import (
 	"testing/fstest"
 	"time"
 
+	"go.xyrillian.de/gg/assert"
 	"go.xyrillian.de/gg/assetembed"
-	. "go.xyrillian.de/gg/internal/test"
 	. "go.xyrillian.de/gg/option"
 )
 
@@ -48,15 +48,15 @@ func TestAssetembed(t *testing.T) {
 		return base64str
 	}
 	fooTxtPath := fmt.Sprintf("foo-%s.txt", urlSafe(fooSHA384))
-	AssertEqual(t, h.AssetPath("foo.txt"), Some(fooTxtPath))
+	assert.Equal(t, h.AssetPath("foo.txt"), Some(fooTxtPath))
 	barJSPath := fmt.Sprintf("res/assets/bar-%s.js", urlSafe(barSHA384))
-	AssertEqual(t, h.AssetPath("res/assets/bar.js"), Some(barJSPath))
-	AssertEqual(t, h.AssetPath("res/assets/unknown.css"), None[string]())
+	assert.Equal(t, h.AssetPath("res/assets/bar.js"), Some(barJSPath))
+	assert.Equal(t, h.AssetPath("res/assets/unknown.css"), None[string]())
 
 	// test Handler.SubresourceIntegrity()
-	AssertEqual(t, h.SubresourceIntegrity("foo.txt"), Some("sha384-"+fooSHA384))
-	AssertEqual(t, h.SubresourceIntegrity("res/assets/bar.js"), Some("sha384-"+barSHA384))
-	AssertEqual(t, h.SubresourceIntegrity("res/assets/unknown.css"), None[string]())
+	assert.Equal(t, h.SubresourceIntegrity("foo.txt"), Some("sha384-"+fooSHA384))
+	assert.Equal(t, h.SubresourceIntegrity("res/assets/bar.js"), Some("sha384-"+barSHA384))
+	assert.Equal(t, h.SubresourceIntegrity("res/assets/unknown.css"), None[string]())
 
 	// test HTTP handler
 	for _, method := range []string{http.MethodHead, http.MethodGet} {
@@ -76,26 +76,26 @@ func TestAssetembed(t *testing.T) {
 		}
 
 		resp := probe("/" + fooTxtPath)
-		AssertEqual(t, resp.Code, http.StatusOK)
-		AssertEqual(t, resp.Header().Get("Content-Type"), "text/plain; charset=utf-8")
-		AssertEqual(t, resp.Header().Get("Content-Length"), strconv.Itoa(len(fooTxt)))
-		AssertEqual(t, resp.Body.String(), ifGet(fooTxt))
+		assert.Equal(t, resp.Code, http.StatusOK)
+		assert.Equal(t, resp.Header().Get("Content-Type"), "text/plain; charset=utf-8")
+		assert.Equal(t, resp.Header().Get("Content-Length"), strconv.Itoa(len(fooTxt)))
+		assert.Equal(t, resp.Body.String(), ifGet(fooTxt))
 
 		resp = probe("/" + barJSPath)
-		AssertEqual(t, resp.Code, http.StatusOK)
-		AssertEqual(t, resp.Header().Get("Content-Type"), "text/javascript; charset=utf-8")
-		AssertEqual(t, resp.Header().Get("Content-Length"), strconv.Itoa(len(barJS)))
-		AssertEqual(t, resp.Body.String(), ifGet(barJS))
+		assert.Equal(t, resp.Code, http.StatusOK)
+		assert.Equal(t, resp.Header().Get("Content-Type"), "text/javascript; charset=utf-8")
+		assert.Equal(t, resp.Header().Get("Content-Length"), strconv.Itoa(len(barJS)))
+		assert.Equal(t, resp.Body.String(), ifGet(barJS))
 
 		resp = probe("/foo.txt") // without digest!
-		AssertEqual(t, resp.Code, http.StatusNotFound)
+		assert.Equal(t, resp.Code, http.StatusNotFound)
 
 		resp = probe("/res/assets/unknown.css") // entirely unknown file
-		AssertEqual(t, resp.Code, http.StatusNotFound)
+		assert.Equal(t, resp.Code, http.StatusNotFound)
 	}
 
 	req := httptest.NewRequest(http.MethodPut, "/"+fooTxtPath, http.NoBody)
 	resp := httptest.NewRecorder()
 	h.ServeHTTP(resp, req)
-	AssertEqual(t, resp.Code, http.StatusMethodNotAllowed)
+	assert.Equal(t, resp.Code, http.StatusMethodNotAllowed)
 }
