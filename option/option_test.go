@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2025 Stefan Majewsky <majewsky@gmx.net>
 // SPDX-License-Identifier: Apache-2.0
 
-package option
+package option_test
 
 import (
 	"encoding/json"
@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"go.xyrillian.de/gg/assert"
+	. "go.xyrillian.de/gg/option"
 )
 
 func TestZeroValue(t *testing.T) {

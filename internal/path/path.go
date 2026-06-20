@@ -5,6 +5,7 @@ package path
 
 import (
 	"encoding/json"
+	"fmt"
 	"strconv"
 	"strings"
 
@@ -36,15 +37,30 @@ func NewPath() Path {
 
 // Element occurs in type [Path]. Only one of both fields is set per instance.
 type Element struct {
+	// used by both package jsonmatch and package assert
 	Key   Option[string]
 	Index int
+
+	// only used by package assert (panics when used with AsJSONPointer())
+	MapKey      Option[any] // holds a value of type K for traversing into types ~map[K]V
+	TypeCast    string      // holds a %T formatting of a type
+	Dereference bool        // marks when a pointer is dereferenced
 }
 
 // KeyElement is a shorthand for constructing an Element with the Key field set.
-func KeyElement(key string) Element { return Element{Some(key), 0} }
+func KeyElement(key string) Element { return Element{Key: Some(key)} }
 
 // IndexElement is a shorthand for constructing an Element with the Index field set.
-func IndexElement(idx int) Element { return Element{None[string](), idx} }
+func IndexElement(idx int) Element { return Element{Index: idx} }
+
+// MapKeyElement is a shorthand for constructing an Element with the MapKey field set.
+func MapKeyElement(key any) Element { return Element{MapKey: Some(key)} }
+
+// TypeCastElement is a shorthand for constructing an Element with the TypeCast field set.
+func TypeCastElement(typeStr string) Element { return Element{TypeCast: typeStr} }
+
+// DereferenceElement is a shorthand for constructing an Element with the Dereference field set.
+func DereferenceElement() Element { return Element{Dereference: true} }
 
 // AsJSONPointer serializes p as a JSON pointer (RFC 6901).
 func (p Path) AsJSONPointer() string {
@@ -54,6 +70,15 @@ func (p Path) AsJSONPointer() string {
 	fragments := make([]string, len(p)+1)
 	fragments[0] = ""
 	for idx, elem := range p {
+		if elem.Dereference {
+			panic("Dereference elements cannot be used with AsJSONPointer()")
+		}
+		if elem.TypeCast != "" {
+			panic("TypeCast elements cannot be used with AsJSONPointer()")
+		}
+		if elem.MapKey.IsSome() {
+			panic("MapKey elements cannot be used with AsJSONPointer()")
+		}
 		if key, ok := elem.Key.Unpack(); ok {
 			fragments[idx+1] = keyIntoPointerFragment(key)
 		} else {
@@ -71,4 +96,30 @@ func keyIntoPointerFragment(key string) string {
 	s = strings.ReplaceAll(s, "~", "~0")
 	s = strings.ReplaceAll(s, "/", "~1")
 	return s
+}
+
+// AsGoExpression serializes p as a partial Go expression like `value.Objects["foo.txt"].Lines[42]`.
+func (p Path) AsGoExpression(baseVariable string) string {
+	b := &strings.Builder{}
+	fmt.Fprint(b, baseVariable)
+	for idx, elem := range p {
+		if elem.Dereference {
+			if idx != len(p)-1 && p[idx+1].Key.IsSome() {
+				// simplify `(*foo).Bar` to `foo.Bar`
+				continue
+			}
+			str := b.String()
+			b = &strings.Builder{}
+			fmt.Fprintf(b, "(*%s)", str)
+		} else if elem.TypeCast != "" {
+			fmt.Fprintf(b, `.(%s)`, elem.TypeCast)
+		} else if mapKey, ok := elem.MapKey.Unpack(); ok {
+			fmt.Fprintf(b, `[%#v]`, mapKey)
+		} else if key, ok := elem.Key.Unpack(); ok {
+			fmt.Fprintf(b, `.%s`, key)
+		} else {
+			fmt.Fprintf(b, `[%d]`, elem.Index)
+		}
+	}
+	return b.String()
 }
