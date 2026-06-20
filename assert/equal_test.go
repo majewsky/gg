@@ -4,6 +4,7 @@
 package assert_test
 
 import (
+	"encoding/json"
 	"strings"
 	"testing"
 
@@ -38,6 +39,16 @@ func TestEqual(t *testing.T) {
 		assert.Equal(t, wrongSlice, correctSlice)
 	}, `at actual[1]: expected 2, but got 42`)
 
+	// basic test for slices of different lengths
+	overlongSlice := []int{1, 2, 3, 4}
+	truncatedSlice := []int{1, 2}
+	expectErrors(t, func(t assert.TestingTB) {
+		assert.Equal(t, overlongSlice, correctSlice)
+	}, `at actual[3]: expected <missing>, but got 4`)
+	expectErrors(t, func(t assert.TestingTB) {
+		assert.Equal(t, truncatedSlice, correctSlice)
+	}, `at actual[2]: expected 3, but got <missing>`)
+
 	// slices: report the entire slice if it comes out more compact than reporting each different element
 	expectErrors(t, func(t assert.TestingTB) {
 		var (
@@ -64,6 +75,62 @@ func TestEqual(t *testing.T) {
 		at actual[4]["bar"]: expected 6, but got 7
 		at actual[5]["bar"]: expected 7, but got 8
 	`)
+
+	// slices: omit the longest common prefix/suffix when reporting the entire slice as different
+	expectErrors(t, func(t assert.TestingTB) {
+		var (
+			expected = make([]int, 100)
+			actual   = make([]int, 100)
+		)
+		for idx := range expected {
+			expected[idx] = idx
+			if idx >= 30 && idx <= 40 {
+				actual[idx] = 70 - idx // This flips the run [30:40] around.
+			} else {
+				actual[idx] = idx
+			}
+		}
+		assert.Equal(t, actual, expected)
+	}, `at actual[30:41]: expected []int{30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40}, but got []int{40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30}`)
+
+	// slices: as a corner case, omission of the longest common prefix/suffix may truncate one side to an empty slice
+	expectErrors(t, func(t assert.TestingTB) {
+		var (
+			expected = make([]int, 100)
+			actual   = make([]int, 102)
+		)
+		for idx := range expected {
+			expected[idx] = idx
+		}
+		for idx := range actual {
+			if idx < 34 {
+				actual[idx] = idx
+			} else {
+				actual[idx] = idx - 2
+			}
+			// The end result of this is [0, 1, ...,, 32, 33, 32, 33, 34, ..., 99].
+		}
+		assert.Equal(t, actual, expected)
+	}, `at actual[34:34]: expected []int{}, but got []int{32, 33}`)
+
+	// slices: special handling for []byte that renders them like strings if they are all ASCII
+	expectErrors(t, func(t assert.TestingTB) {
+		assert.Equal(t, []byte("hallo"), []byte("hello"))
+	}, `expected []byte("hello"), but got []byte("hallo")`)
+	correctPayload, err := json.Marshal(map[string]int{"foo": 1, "bar": 2})
+	if err != nil {
+		t.Fatal(err)
+	}
+	wrongPayload, err := json.Marshal(map[string]int{"foo": 1, "bar": 3})
+	if err != nil {
+		t.Fatal(err)
+	}
+	expectErrors(t, func(t assert.TestingTB) {
+		assert.Equal(t, json.RawMessage(wrongPayload), json.RawMessage(correctPayload))
+		// ^ Without the special handling, this would produce the nonsensical output:
+		//   at actual[7]: expected 0x32, but got 0x33
+	}, "expected []byte(`{\"bar\":2,\"foo\":1}`), but got []byte(`{\"bar\":3,\"foo\":1}`)")
+	// ^ This checks that backticks are used when it makes a nicer output.
 
 	// basic test for maps
 	correctMap := map[string]int{
@@ -161,6 +228,3 @@ func TestEqual(t *testing.T) {
 		at actual[0].Name: expected "Alice", but got "Bob"
 	`)
 }
-
-// TODO: check coverage
-// TODO: implement special case for ~[]byte containing valid UTF-8

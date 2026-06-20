@@ -42,9 +42,16 @@ type Element struct {
 	Index int
 
 	// only used by package assert (panics when used with AsJSONPointer())
+	Slice       Option[SliceBounds]
 	MapKey      Option[any] // holds a value of type K for traversing into types ~map[K]V
 	TypeCast    string      // holds a %T formatting of a type
 	Dereference bool        // marks when a pointer is dereferenced
+}
+
+// SliceBounds appears in type [Element].
+type SliceBounds struct {
+	Start int
+	End   int
 }
 
 // KeyElement is a shorthand for constructing an Element with the Key field set.
@@ -52,6 +59,9 @@ func KeyElement(key string) Element { return Element{Key: Some(key)} }
 
 // IndexElement is a shorthand for constructing an Element with the Index field set.
 func IndexElement(idx int) Element { return Element{Index: idx} }
+
+// SliceElement is a shorthand for constructing an Element with the Slice field set.
+func SliceElement(start, end int) Element { return Element{Slice: Some(SliceBounds{start, end})} }
 
 // MapKeyElement is a shorthand for constructing an Element with the MapKey field set.
 func MapKeyElement(key any) Element { return Element{MapKey: Some(key)} }
@@ -78,6 +88,9 @@ func (p Path) AsJSONPointer() string {
 		}
 		if elem.MapKey.IsSome() {
 			panic("MapKey elements cannot be used with AsJSONPointer()")
+		}
+		if elem.Slice.IsSome() {
+			panic("Slice elements cannot be used with AsJSONPointer()")
 		}
 		if key, ok := elem.Key.Unpack(); ok {
 			fragments[idx+1] = keyIntoPointerFragment(key)
@@ -115,6 +128,8 @@ func (p Path) AsGoExpression(baseVariable string) string {
 			fmt.Fprintf(b, `.(%s)`, elem.TypeCast)
 		} else if mapKey, ok := elem.MapKey.Unpack(); ok {
 			fmt.Fprintf(b, `[%#v]`, mapKey)
+		} else if bounds, ok := elem.Slice.Unpack(); ok {
+			fmt.Fprintf(b, `[%d:%d]`, bounds.Start, bounds.End)
 		} else if key, ok := elem.Key.Unpack(); ok {
 			fmt.Fprintf(b, `.%s`, key)
 		} else {

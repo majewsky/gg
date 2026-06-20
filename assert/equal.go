@@ -7,6 +7,8 @@ import (
 	"fmt"
 	"reflect"
 	"slices"
+	"strings"
+	"unicode/utf8"
 
 	"go.xyrillian.de/gg/internal/path"
 )
@@ -108,6 +110,20 @@ func findInequalities(p path.Path, actual, expected reflect.Value) (result []ine
 }
 
 func findInequalitiesInArrayOrSlice(p path.Path, actual, expected reflect.Value) (result []inequality) {
+	// special case: for ~[]byte types (e.g. json.RawMessage) containing a valid Unicode string on both sides,
+	// a diff using string literals is likely to be vastly more readable
+	if actual.Type().Elem() == reflect.TypeFor[byte]() {
+		actualPayload := actual.Convert(reflect.TypeFor[[]byte]()).Interface().([]byte)
+		expectedPayload := expected.Convert(reflect.TypeFor[[]byte]()).Interface().([]byte)
+		if utf8.Valid(actualPayload) && utf8.Valid(expectedPayload) {
+			return []inequality{{
+				Pointer:  p.AsGoExpression("actual"),
+				Actual:   formatByteSliceViaString(actualPayload),
+				Expected: formatByteSliceViaString(expectedPayload),
+			}}
+		}
+	}
+
 	// recurse into all elements
 	for idx := range max(actual.Len(), expected.Len()) {
 		subpath := append(p, path.IndexElement(idx))
@@ -141,17 +157,62 @@ func findInequalitiesInArrayOrSlice(p path.Path, actual, expected reflect.Value)
 		for _, ineq := range result {
 			overallTextLength += len(ineq.Pointer) + len(ineq.Actual) + len(ineq.Expected)
 		}
-		ineq := inequality{
-			Pointer:  p.AsGoExpression("actual"),
-			Actual:   formatValue(actual),
-			Expected: formatValue(expected),
-		}
+		ineq := buildSingleInequalityForArrayOrSlice(p, actual, expected)
 		if len(ineq.Pointer)+len(ineq.Actual)+len(ineq.Expected) < overallTextLength {
 			return []inequality{ineq}
 		}
 	}
 
 	return result
+}
+
+func formatByteSliceViaString(buf []byte) string {
+	str := string(buf)
+	if strings.Contains(str, `"`) && !strings.Contains(str, "`") {
+		return fmt.Sprintf("[]byte(`%s`)", str)
+	} else {
+		return fmt.Sprintf("[]byte(%q)", str)
+	}
+}
+
+func buildSingleInequalityForArrayOrSlice(p path.Path, actual, expected reflect.Value) inequality {
+	// This is a helper for findInequalitiesInArrayOrSlice() that reports only a single inequality for the entire thing.
+	// But it still tries to be clever, and will omit the longest common prefix and suffix to shorten the output.
+	maxTruncateableLength := min(actual.Len(), expected.Len())
+
+	commonPrefixLength := 0
+	for idx := range maxTruncateableLength {
+		actualElem := actual.Index(idx)
+		expectedElem := expected.Index(idx)
+		if reflect.DeepEqual(actualElem.Interface(), expectedElem.Interface()) {
+			commonPrefixLength = idx + 1
+		} else {
+			break
+		}
+	}
+
+	commonSuffixLength := 0
+	for idx := range max(0, maxTruncateableLength-commonPrefixLength) {
+		actualElem := actual.Index(actual.Len() - 1 - idx)
+		expectedElem := expected.Index(expected.Len() - 1 - idx)
+		if reflect.DeepEqual(actualElem.Interface(), expectedElem.Interface()) {
+			commonSuffixLength = idx + 1
+		} else {
+			break
+		}
+	}
+
+	if commonPrefixLength > 0 || commonSuffixLength > 0 {
+		p = append(p, path.SliceElement(commonPrefixLength, expected.Len()-commonSuffixLength))
+		actual = actual.Slice(commonPrefixLength, actual.Len()-commonSuffixLength)
+		expected = expected.Slice(commonPrefixLength, expected.Len()-commonSuffixLength)
+	}
+
+	return inequality{
+		Pointer:  p.AsGoExpression("actual"),
+		Actual:   formatValue(actual),
+		Expected: formatValue(expected),
+	}
 }
 
 func findInequalitiesInMap(p path.Path, actual, expected reflect.Value) (result []inequality) {
