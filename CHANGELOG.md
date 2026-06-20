@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.10.1 (TBD)
+
+Changes:
+
+- Fix a panic in assert.ErrEqual when the `expected` argument is an error whose underlying type is a struct type.
+
 # v1.10.0 (2026-06-20)
 
 Changes:

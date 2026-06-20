@@ -21,7 +21,9 @@ func ErrEqual(t TestingTB, actual error, expected any) bool {
 	// and also coerce all nil values of concrete `error` types into untyped nil
 	if expectedErr, ok := expected.(error); ok {
 		// convert nil values of concrete error types into a generic nil value
-		if reflect.ValueOf(expectedErr).IsNil() {
+		expectedValue := reflect.ValueOf(expectedErr)
+		kind := expectedValue.Kind()
+		if (kind == reflect.Pointer || kind == reflect.Interface) && expectedValue.IsNil() {
 			expected = nil
 		} else {
 			expected = expectedErr

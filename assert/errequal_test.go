@@ -74,4 +74,18 @@ func TestErrEqual(t *testing.T) {
 		Outcome: testcapture.OutcomePanicked,
 		Panic:   "cannot handle `expected` of type int",
 	})
+
+	// an earlier version had a bug because this call caused reflect.Value.IsNil() to be called on a value of kind Struct
+	expectErrors(t, func(t assert.TestingTB) {
+		assert.ErrEqual(t, nil, structTypedError{"foo"})
+	}, `expected "foo", but got no error`)
+}
+
+type structTypedError struct {
+	Message string
+}
+
+// Error implements the builtin/error interface.
+func (e structTypedError) Error() string {
+	return e.Message
 }
