@@ -31,6 +31,19 @@ func TestEqual(t *testing.T) {
 		assert.Equal(t, false, true)
 	}, `expected true, but got false`)
 
+	// scalars: check that string values are formatted with backticks when it makes the output nicer
+	expectErrors(t, func(t assert.TestingTB) {
+		assert.Equal(t, "bar", "foo")
+		assert.Equal(t, "Please run `rm -rf /`.", "Please run `echo hello`.")
+		assert.Equal(t, `{"foo":1,"bar":3}`, `{"foo":1,"bar":2}`)
+		assert.Equal(t, "\x1B[1;31mError\x1B[0m", "\x1B[1;32mSuccess\x1B[0m")
+	}, strings.Join([]string{
+		`expected "foo", but got "bar"`,
+		"expected \"Please run `echo hello`.\", but got \"Please run `rm -rf /`.\"",
+		"expected `{\"foo\":1,\"bar\":2}`, but got `{\"foo\":1,\"bar\":3}`",
+		`expected "\x1b[1;32mSuccess\x1b[0m", but got "\x1b[1;31mError\x1b[0m"`,
+	}, "\n"))
+
 	// basic test for slices
 	correctSlice := []int{1, 2, 3}
 	wrongSlice := []int{1, 42, 3}
