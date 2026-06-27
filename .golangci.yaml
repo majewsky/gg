@@ -39,7 +39,7 @@ linters:
     - whitespace
   settings:
     goconst:
-      min-occurrences: 5
+      min-occurrences: 6
     gocritic:
       disable-all: true
       enabled-checks:

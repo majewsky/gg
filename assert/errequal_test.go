@@ -89,3 +89,27 @@ type structTypedError struct {
 func (e structTypedError) Error() string {
 	return e.Message
 }
+
+func TestErrsEqual(t *testing.T) {
+	// NOTE: ErrsEqual() uses the same basic machinery as ErrEqual(), so we're not comparing all types here.
+	// We just need to check the machinery of iterating over `actual` and `expected` and dealing with slice length mismatches.
+
+	errs := []error{
+		errors.New("first error"),
+		errors.New("second error"),
+	}
+
+	assert.ErrsEqual(t, errs, []string{"first error", "second error"})
+	expectErrors(t, func(t assert.TestingTB) {
+		assert.ErrsEqual(t, errs, []string{"second error", "first error"})
+	}, `
+		in actual[0]: expected "second error", but got "first error"
+		in actual[1]: expected "first error", but got "second error"
+	`)
+	expectErrors(t, func(t assert.TestingTB) {
+		assert.ErrsEqual(t, errs, []string{"first error"})
+	}, `in actual[1]: expected <missing>, but got "second error"`)
+	expectErrors(t, func(t assert.TestingTB) {
+		assert.ErrsEqual(t, errs, []string{"first error", "second error", "third error"})
+	}, `in actual[2]: expected "third error", but got <missing>`)
+}

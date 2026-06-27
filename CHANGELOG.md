@@ -8,7 +8,9 @@ SPDX-License-Identifier: Apache-2.0
 Changes:
 
 - Add package pathrouter.
-- In assert.Equal output, present string literals with backticks instead of quotes when it makes the output more readable.
+- Add `assert.ErrsEqual()`.
+- In `assert.Equal()` output, present string literals with backticks instead of quotes when it makes the output more readable.
+- Fixed `assert.ErrEqual()` not calling `t.Helper()`.
 
 # v1.10.1 (2026-06-20)
 
