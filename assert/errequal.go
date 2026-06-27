@@ -30,6 +30,7 @@ func ErrEqual(t TestingTB, actual error, expected any) bool {
 // ErrsEqual checks if a list of actual errors matches the expectation.
 // Both lists must be of equal length, and each individual entry must match according to [ErrEqual].
 func ErrsEqual[A ~[]error, E ~[]V, V any](t TestingTB, actual A, expected E) bool {
+	t.Helper()
 	ok := true
 	for idx := range max(len(actual), len(expected)) {
 		var err error
