@@ -9,6 +9,9 @@ path = [
   ".gitignore",
   "description",
   "go.mod",
+  "go.work",
+  "benchmark/go.mod",
+  "benchmark/go.sum",
 ]
 SPDX-FileCopyrightText = "Stefan Majewsky <majewsky@gmx.net>"
 SPDX-License-Identifier = "Apache-2.0"

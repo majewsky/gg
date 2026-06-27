@@ -3,10 +3,11 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
-# v1.10.2 (TBD)
+# v1.11.0 (TBD)
 
 Changes:
 
+- Add package pathrouter.
 - In assert.Equal output, present string literals with backticks instead of quotes when it makes the output more readable.
 
 # v1.10.1 (2026-06-20)

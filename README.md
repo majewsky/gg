@@ -19,6 +19,7 @@ My personal extension of the standard library.
 ### Addons for net/http
 
 - [assetembed](./assetembed/): HTTP handler for efficiently serving embedded assets using the cache-busting pattern
+- [pathrouter](./pathrouter/): HTTP router that differentiates endpoints based on paths without any regex matching
 
 ### Addons for testing
 
