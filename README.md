@@ -20,6 +20,10 @@ My personal extension of the standard library.
 
 - [gsql](./gsql/): abstraction layer for database libraries, supporting both database/sql drivers and non-standard drivers like [pgx](https://github.com/jackc/pgx)
 
+### Addons for errors
+
+- [errext](./errext/): composite error types
+
 ### Addons for net/http
 
 - [assetembed](./assetembed/): HTTP handler for efficiently serving embedded assets using the cache-busting pattern
