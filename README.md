@@ -16,6 +16,10 @@ My personal extension of the standard library.
 - [option](./option/): an Option type with strong isolation
 - [options](./options/): additional functions for type Option
 
+### Addons for database/sql
+
+- [gsql](./gsql/): abstraction layer for database libraries, supporting both database/sql drivers and non-standard drivers like [pgx](https://github.com/jackc/pgx)
+
 ### Addons for net/http
 
 - [assetembed](./assetembed/): HTTP handler for efficiently serving embedded assets using the cache-busting pattern

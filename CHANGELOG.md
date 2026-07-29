@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.12.0 (TBD)
+
+Changes:
+
+- Add package gsql.
+
 # v1.11.1 (2026-06-27)
 
 Changes:
