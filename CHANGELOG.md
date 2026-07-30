@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 
 Changes:
 
-- Add packages errext and gsql.
+- Add packages errext, gsql and pgruntime.
 
 # v1.11.1 (2026-06-27)
 

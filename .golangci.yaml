@@ -71,6 +71,7 @@ linters:
       go-version-pattern: 1\.\d+(\.0)?$
     gosec:
       excludes:
+        - G204 # gosec likes to scream about the fact that we are passing paths derived from $PWD into command invocations
         - G306 # gosec does not understand how umask works
     nolintlint:
       require-specific: true

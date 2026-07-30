@@ -12,6 +12,7 @@ path = [
   "go.work",
   "benchmark/go.mod",
   "benchmark/go.sum",
+  "pgruntime/tool_template.sh",
 ]
 SPDX-FileCopyrightText = "Stefan Majewsky <majewsky@gmx.net>"
 SPDX-License-Identifier = "Apache-2.0"
