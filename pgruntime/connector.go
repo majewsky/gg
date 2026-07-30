@@ -47,7 +47,7 @@ func (c Connector[T]) Connect(ctx context.Context, target ConnectionTarget, beha
 	}
 	err = behavior.applyTo(ctx, db)
 	if err != nil {
-		return none, errext.WithCleanup(err, "db.Close", db.GSQLClose())
+		return none, errext.WithCleanup(err, "db.Close", db.GSQLClose(ctx))
 	}
 	return db, nil
 }
@@ -105,8 +105,8 @@ func (c Connector[T]) prepareTestDatabase(ctx context.Context, target Connection
 	}
 	_, err = execQuery(ctx, db, "DROP DATABASE IF EXISTS "+quoteIdentifier(dbName), nil)
 	if err != nil {
-		return errext.WithCleanup(err, "db.Close", db.GSQLClose())
+		return errext.WithCleanup(err, "db.Close", db.GSQLClose(ctx))
 	}
 	_, err = execQuery(ctx, db, "CREATE DATABASE "+quoteIdentifier(dbName), nil)
-	return errext.WithCleanup(err, "db.Close", db.GSQLClose())
+	return errext.WithCleanup(err, "db.Close", db.GSQLClose(ctx))
 }

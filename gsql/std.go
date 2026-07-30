@@ -185,7 +185,7 @@ type sqlConnectionHandle[T sqlConnection] struct {
 }
 
 // GSQLClose implements the [ConnectionHandle] interface.
-func (h sqlConnectionHandle[T]) GSQLClose() error {
+func (h sqlConnectionHandle[T]) GSQLClose(ctx context.Context) error {
 	return h.Base.Close()
 }
 
