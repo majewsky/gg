@@ -24,7 +24,8 @@ type ConnectionHandle interface {
 	Handle
 
 	// GSQLClose closes the connection represented by this handle.
-	GSQLClose() error
+	// Once this method has been called, other methods must not be called.
+	GSQLClose(ctx context.Context) error
 
 	// GSQLTransact executes an action within a database transaction.
 	// The callback will be provided with a [Handle] referring to the transaction.
