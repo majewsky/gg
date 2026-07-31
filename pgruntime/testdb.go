@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"testing"
 	"time"
@@ -46,6 +47,16 @@ var toolScriptTemplate []byte
 //	func TestMain(m *testing.M) {
 //		pgruntime.WithTestDB(m, m.Run)
 //	}
+//
+// If the environment variable PGRUNTIME_TESTDB_PATH is set, this path will be used instead of ".testdb" below the module root dir.
+// This can be used e.g. to place the testdb on a tmpfs to avoid slow disk IO.
+// Doing so can reduce test execution times in realistic scenarios by as much as two thirds.
+// For clarity, a symlink will be created at the usual ".testdb" location, pointing to the actual path.
+//
+// If the value of $PGRUNTIME_TESTDB_PATH contains the string "%MODULE%" (e.g. "/tmp/testdb/%MODULE%"),
+// this string will be replaced by the name of the main module.
+// Using this placeholder, you can set this variable in your shell rc file once,
+// but the test databases of different applications will still be neatly separated.
 func WithTestDB(m *testing.M, action func() int) int {
 	// NOTE: Lifting the "-p 1" restriction is tough because tests for multiple packages are
 	//       compiled into one test binary per package, and thus execute in separate processes.
@@ -91,6 +102,7 @@ func withTestDB(m *testing.M, action func() int) (_ int, returnedError error) {
 }
 
 func findTestdbPath() (string, error) {
+	// find `$REPO_ROOT/.testdb`
 	cwd, err := os.Getwd()
 	if err == nil {
 		cwd, err = filepath.Abs(cwd)
@@ -106,7 +118,24 @@ func findTestdbPath() (string, error) {
 	if !ok {
 		return "", fmt.Errorf("neither the working directory %q nor any of its parents contain a go.mod file", cwd)
 	}
-	return filepath.Join(rootPath, ".testdb"), nil
+	testdbPath := filepath.Join(rootPath, ".testdb")
+
+	// find override path, if any
+	overridePath := os.Getenv("PGRUNTIME_TESTDB_PATH")
+	if overridePath == "" {
+		return testdbPath, nil
+	}
+	if strings.Contains(overridePath, "%MODULE%") {
+		info, ok := debug.ReadBuildInfo()
+		if !ok {
+			panic("$PGRUNTIME_TESTDB_PATH contains %MODULE% placeholder, but binary was not built with module support")
+		}
+		overridePath = strings.ReplaceAll(overridePath, "%MODULE%", info.Main.Path)
+	}
+
+	// if there is an override path, report the override path (so that initDBIfNecessary can create it),
+	// but put a symlink at the standard path for convenient access
+	return overridePath, os.Symlink(overridePath, testdbPath)
 }
 
 func findModuleRootDir(dirPath string) (Option[string], error) {
