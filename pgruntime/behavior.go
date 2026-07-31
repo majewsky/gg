@@ -115,7 +115,7 @@ func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations m
 			if err != nil {
 				return fmt.Errorf("could not execute schema migration: %w", err)
 			}
-			_, err = execQuery(ctx, db, `UPDATE schema_migrations SET version = %d, dirty = FALSE`, []any{version})
+			_, err = execQuery(ctx, db, `UPDATE schema_migrations SET version = $1, dirty = FALSE`, []any{version})
 			if err != nil {
 				return fmt.Errorf("could not update schema_migrations record: %w", err)
 			}
