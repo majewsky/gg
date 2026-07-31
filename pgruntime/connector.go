@@ -78,6 +78,7 @@ func OverrideDatabaseName(dbName string) TestSetupOption {
 // Some tests require setting up multiple separate connections to the same database.
 // The second return argument can be be used with [Connector.Connect] to obtain additional connections as needed.
 func (c Connector[T]) ConnectForTest(t assert.TestingTB, behavior ConnectionBehavior, opts ...TestSetupOption) (T, ConnectionTarget) {
+	t.Helper()
 	ctx := t.Context()
 
 	params := testSetupParams{
@@ -97,6 +98,7 @@ func (c Connector[T]) ConnectForTest(t assert.TestingTB, behavior ConnectionBeha
 	}
 
 	// connect to "postgres" database for the DROP/CREATE DATABASE queries
+	// TODO: DROP/CREATE DATABASE turns out to be very slow (in a real-world scenario: 100ms per test instead of ~10ms to wipe just the DB contents and reset sequences)
 	target := ConnectionTarget{
 		HostName:          "127.0.0.1",
 		Port:              testdbPort,
@@ -129,8 +131,11 @@ func (c Connector[T]) prepareTestDatabase(ctx context.Context, target Connection
 	}
 	_, err = execQuery(ctx, db, "DROP DATABASE IF EXISTS "+quoteIdentifier(dbName), nil)
 	if err != nil {
-		return errext.WithCleanup(err, "db.Close", db.GSQLClose(ctx))
+		return errext.WithCleanup(fmt.Errorf("during DROP DATABASE: %w", err), "db.Close", db.GSQLClose(ctx))
 	}
 	_, err = execQuery(ctx, db, "CREATE DATABASE "+quoteIdentifier(dbName), nil)
-	return errext.WithCleanup(err, "db.Close", db.GSQLClose(ctx))
+	if err != nil {
+		return errext.WithCleanup(fmt.Errorf("during CREATE DATABASE: %w", err), "db.Close", db.GSQLClose(ctx))
+	}
+	return errext.WithCleanup(nil, "db.Close", db.GSQLClose(ctx))
 }
