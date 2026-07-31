@@ -52,6 +52,23 @@ func (c Connector[T]) Connect(ctx context.Context, target ConnectionTarget, beha
 	return db, nil
 }
 
+// TestSetupOption is an optional behavior that can be given to [Connector.ConnectForTest].
+type TestSetupOption func(*testSetupParams)
+
+type testSetupParams struct {
+	DatabaseName string
+}
+
+// OverrideDatabaseName is a [TestSetupOption] that picks a different database name than the default of t.Name().
+//
+// This is only necessary if a single test needs to use multiple database connections at the same time,
+// e.g. to simulate two separate deployments of the application next to each other.
+func OverrideDatabaseName(dbName string) TestSetupOption {
+	return func(params *testSetupParams) {
+		params.DatabaseName = dbName
+	}
+}
+
 // ConnectForTest connects to the test database server managed by [WithTestDB].
 //
 // Each test will run in its own separate database (whose name is the same as t.Name()),
@@ -60,16 +77,23 @@ func (c Connector[T]) Connect(ctx context.Context, target ConnectionTarget, beha
 //
 // Some tests require setting up multiple separate connections to the same database.
 // The second return argument can be be used with [Connector.Connect] to obtain additional connections as needed.
-func (c Connector[T]) ConnectForTest(t assert.TestingTB, behavior ConnectionBehavior) (T, ConnectionTarget) {
+func (c Connector[T]) ConnectForTest(t assert.TestingTB, behavior ConnectionBehavior, opts ...TestSetupOption) (T, ConnectionTarget) {
 	ctx := t.Context()
+
+	params := testSetupParams{
+		DatabaseName: t.Name(),
+	}
+	for _, opt := range opts {
+		opt(&params)
+	}
 
 	// normalize t.Name() into an acceptable database name for PostgreSQL
 	//   - only alphanumerics and underscore -> replace all other symbols with _
 	//   - max 63 chars -> reject longer names
-	dbName := strings.ToLower(t.Name())
+	dbName := strings.ToLower(params.DatabaseName)
 	dbName = regexp.MustCompile(`[^a-z_]`).ReplaceAllString(dbName, "_")
 	if len(dbName) > 63 {
-		t.Fatalf("cannot use t.Name() = %q (normalized to %q) as a database name because it is longer than 63 chars", t.Name(), dbName)
+		t.Fatalf("cannot use t.Name() = %q (normalized to %q) as a database name because it is longer than 63 chars", params.DatabaseName, dbName)
 	}
 
 	// connect to "postgres" database for the DROP/CREATE DATABASE queries
