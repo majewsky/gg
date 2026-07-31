@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.13.0 (TBD)
+
+Changes:
+
+- Add WithinTransaction method to `*gsql.DB` and `*gsql.Conn` methods.
+
 # v1.12.0 (2026-07-31)
 
 Changes:
