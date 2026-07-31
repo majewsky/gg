@@ -68,8 +68,7 @@ func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations m
 	}
 
 	// read schema_migrations table
-	var rowCount int64
-	err = queryRow(ctx, db, `SELECT COUNT(*) FROM schema_migrations`, nil, []any{&rowCount})
+	rowCount, err := selectOneValue[int64](ctx, db, `SELECT COUNT(*) FROM schema_migrations`)
 	if err != nil {
 		return fmt.Errorf("could not check row count for schema_migrations: %w", err)
 	}

@@ -28,5 +28,4 @@
 // [gg-pgx]: https://git.xyrillian.de/go-gg-pgx/
 package pgruntime
 
-// TODO: before merging this branch, start work on go-gg-pgx to verify that we're not painting ourselves into a corner with the gsql.Handle interfaces
 // TODO: test coverage via separate module importing github.com/lib/pq
