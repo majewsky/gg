@@ -25,5 +25,5 @@
 // [easypg]: https://pkg.go.dev/github.com/sapcc/go-bits/easypg
 // [lib/pq]: https://pkg.go.dev/github.com/lib/pq
 // [pgx]: https://pkg.go.dev/github.com/jackc/pgx/v5
-// [gg-pgx]: https://git.xyrillian.de/go-gg-pgx/
+// [gg-pgx]: https://pkg.go.dev/go.xyrillian.de/gg-pgx
 package pgruntime
