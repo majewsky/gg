@@ -69,8 +69,7 @@ func WithTestDB(m *testing.M, action func() int) int {
 	if err == nil {
 		return result
 	} else {
-		fmt.Fprintln(os.Stderr, err.Error())
-		return 1
+		panic(err.Error())
 	}
 }
 
@@ -135,7 +134,12 @@ func findTestdbPath() (string, error) {
 
 	// if there is an override path, report the override path (so that initDBIfNecessary can create it),
 	// but put a symlink at the standard path for convenient access
-	return overridePath, os.Symlink(overridePath, testdbPath)
+	err = os.Symlink(overridePath, testdbPath)
+	if os.IsExist(err) {
+		// do not complain if the symlink already exists
+		err = nil
+	}
+	return overridePath, err
 }
 
 func findModuleRootDir(dirPath string) (Option[string], error) {

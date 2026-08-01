@@ -164,10 +164,12 @@ func resetTestDatabase(ctx context.Context, db gsql.Handle, params testSetupPara
 	}
 
 	// truncate all tables at once
-	query = fmt.Sprintf(`TRUNCATE %s RESTART IDENTITY CASCADE`, strings.Join(quotedTableNames, ", "))
-	_, err = execQuery(ctx, db, query, nil)
-	if err != nil {
-		return fmt.Errorf("during %s: %w", query, err)
+	if len(quotedTableNames) > 0 {
+		query = fmt.Sprintf(`TRUNCATE %s RESTART IDENTITY CASCADE`, strings.Join(quotedTableNames, ", "))
+		_, err = execQuery(ctx, db, query, nil)
+		if err != nil {
+			return fmt.Errorf("during %s: %w", query, err)
+		}
 	}
 
 	return nil

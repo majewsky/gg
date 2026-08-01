@@ -20,12 +20,10 @@
 // This is a clean-room reimplementation of one half of [easypg] with several interface improvements and cleanups, most notably:
 //   - The hard dependency on lib/pq has been removed.
 //   - Support for creating databases on first use has been removed (except in ConnectForTest).
-//   - ConnectForTest now recreates databases instead of just wiping their contents.
+//   - The reset logic in ConnectForTest is completely reworked and massively simplified.
 //
 // [easypg]: https://pkg.go.dev/github.com/sapcc/go-bits/easypg
 // [lib/pq]: https://pkg.go.dev/github.com/lib/pq
 // [pgx]: https://pkg.go.dev/github.com/jackc/pgx/v5
 // [gg-pgx]: https://git.xyrillian.de/go-gg-pgx/
 package pgruntime
-
-// TODO: test coverage via separate module importing github.com/lib/pq

@@ -8,8 +8,6 @@ SPDX-License-Identifier: Apache-2.0
 Changes:
 
 - Add package pgruntime.
-- TODO: add SelectOneValue, SelectSeveralValues, etc. to gsql
-- TODO: add WithinTransaction to gsql.DB, gsql.Conn (and same on gg-pgx)
 
 # v1.12.0 (2026-07-31)
 
