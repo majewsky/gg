@@ -13,7 +13,7 @@ static-check: FORCE
 	@if ! reuse lint -q; then reuse lint; fi
 
 GO_COVERPKGS := $(shell go list ./... | tr '\n' , | sed 's/,$$//')
-GO_TESTPKGS := $(shell go list -f '{{if or .TestGoFiles .XTestGoFiles}}{{.ImportPath}}{{end}}' ./...)
+GO_TESTPKGS := $(shell go list -f '{{if or .TestGoFiles .XTestGoFiles}}{{.ImportPath}}{{end}}' ./... ./testing/...)
 
 build/cover.out: FORCE
 	@printf "\e[1;36m>> go test\e[0m\n"

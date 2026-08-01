@@ -1,0 +1,4 @@
+github.com/lib/pq v1.12.3 h1:tTWxr2YLKwIvK90ZXEw8GP7UFHtcbTtty8zsI+YjrfQ=
+github.com/lib/pq v1.12.3/go.mod h1:/p+8NSbOcwzAEI7wiMXFlgydTwcgTr3OSKMsD2BitpA=
+go.xyrillian.de/gg v1.12.1-0.20260731210839-e26a214de395 h1:nA6DhnjgGw1sg+Piv4xZupuoD0dM+x4Fyd91Gi7XgOo=
+go.xyrillian.de/gg v1.12.1-0.20260731210839-e26a214de395/go.mod h1:DoO4fQSWIrBRlNlCjVyrYM0kAEBt/Jg2GkMH+cGRZ0k=

@@ -19,6 +19,7 @@ My personal extension of the standard library.
 ### Addons for database/sql
 
 - [gsql](./gsql/): abstraction layer for database libraries, supporting both database/sql drivers and non-standard drivers like [pgx](https://github.com/jackc/pgx)
+- [pgruntime](./pgruntime/): connection handling for PostgreSQL databases, including optional support for database migrations and self-contained test DB instances
 
 ### Addons for errors
 

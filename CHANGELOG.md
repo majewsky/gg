@@ -7,6 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 
 Changes:
 
+- Add package pgruntime.
 - Add WithinTransaction method to `*gsql.DB` and `*gsql.Conn` methods.
 
 # v1.12.0 (2026-07-31)
