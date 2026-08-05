@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"go.xyrillian.de/gg/gsql"
+	"go.xyrillian.de/gg/internal/gq"
 )
 
 // ConnectionBehavior contains configuration for [Connector.Connect] and [Connector.ConnectForTest].
@@ -62,13 +63,13 @@ func (b ConnectionBehavior) applyTo(ctx context.Context, db gsql.ConnectionHandl
 
 func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations map[int64]string) error {
 	// apply schema_migrations table schema
-	_, err := execQuery(ctx, db, MigrationsSchema, nil)
+	_, err := gq.ExecQuery(ctx, db, MigrationsSchema, nil)
 	if err != nil {
 		return fmt.Errorf("could not apply schema_migrations table schema: %w", err)
 	}
 
 	// read schema_migrations table
-	rowCount, err := selectOneValue[int64](ctx, db, `SELECT COUNT(*) FROM schema_migrations`)
+	rowCount, err := gq.SelectOneValue[int64](ctx, db, `SELECT COUNT(*) FROM schema_migrations`)
 	if err != nil {
 		return fmt.Errorf("could not check row count for schema_migrations: %w", err)
 	}
@@ -79,12 +80,12 @@ func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations m
 	switch rowCount {
 	case 0:
 		currentVersion = 0
-		_, err = execQuery(ctx, db, `INSERT INTO schema_migrations (version, dirty) VALUES (0, FALSE)`, nil)
+		_, err = gq.ExecQuery(ctx, db, `INSERT INTO schema_migrations (version, dirty) VALUES (0, FALSE)`, nil)
 		if err != nil {
 			return fmt.Errorf("could not initialize schema_migrations record: %w", err)
 		}
 	case 1:
-		err = queryRow(ctx, db, `SELECT version, dirty FROM schema_migrations`, nil, []any{&currentVersion, &dirty})
+		err = gq.QueryRow(ctx, db, `SELECT version, dirty FROM schema_migrations`, nil, []any{&currentVersion, &dirty})
 		if err != nil {
 			return fmt.Errorf("could not read schema_migrations record: %w", err)
 		}
@@ -112,7 +113,7 @@ func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations m
 		err := db.GSQLTransact(ctx, func(tx gsql.Handle) error {
 			// ensure that nobody else is migrating until we are done
 			var actualVersion int64
-			err := queryRow(ctx, db, `SELECT version FROM schema_migrations FOR UPDATE`, nil, []any{&actualVersion})
+			err := gq.QueryRow(ctx, db, `SELECT version FROM schema_migrations FOR UPDATE`, nil, []any{&actualVersion})
 			if err != nil {
 				return fmt.Errorf("could not obtain lock for schema migration: %w", err)
 			}
@@ -125,11 +126,11 @@ func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations m
 			}
 
 			// perform the next migration
-			_, err = execQuery(ctx, db, migrations[version], nil)
+			_, err = gq.ExecQuery(ctx, db, migrations[version], nil)
 			if err != nil {
 				return fmt.Errorf("could not execute schema migration: %w", err)
 			}
-			_, err = execQuery(ctx, db, `UPDATE schema_migrations SET version = $1, dirty = FALSE`, []any{version})
+			_, err = gq.ExecQuery(ctx, db, `UPDATE schema_migrations SET version = $1, dirty = FALSE`, []any{version})
 			if err != nil {
 				return fmt.Errorf("could not update schema_migrations record: %w", err)
 			}
