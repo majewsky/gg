@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.13.1 (TBD)
+
+Changes:
+
+- pgruntime: Fix PostgreSQL version detection on Linux distributions with nonstandard `psql --version` output.
+
 # v1.13.0 (2026-08-01)
 
 Changes:
