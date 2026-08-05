@@ -20,6 +20,7 @@ My personal extension of the standard library.
 
 - [gsql](./gsql/): abstraction layer for database libraries, supporting both database/sql drivers and non-standard drivers like [pgx](https://github.com/jackc/pgx)
 - [pgruntime](./pgruntime/): connection handling for PostgreSQL databases, including optional support for database migrations and self-contained test DB instances
+- [pgtest](./pgtest/): test assertions for the content of PostgreSQL databases
 
 ### Addons for errors
 
