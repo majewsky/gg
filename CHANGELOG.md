@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.13.2 (TBD)
+
+Changes:
+
+- pgruntime: Add transaction locking to protect against concurrent migrations.
+
 # v1.13.1 (2026-08-05)
 
 Changes:
