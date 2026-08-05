@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.13.3 (TBD)
+
+Changes:
+
+- pgruntime: Add ApplicationName to ConnectionTarget for easy upgrade from go-bits/easypg.
+
 # v1.13.2 (2026-08-05)
 
 Changes:

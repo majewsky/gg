@@ -1,7 +1,7 @@
 // SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 // SPDX-License-Identifier: Apache-2.0
 
-package pgruntime_test
+package pgruntime
 
 import (
 	"net/url"
@@ -9,11 +9,10 @@ import (
 	"testing"
 
 	"go.xyrillian.de/gg/assert"
-	"go.xyrillian.de/gg/pgruntime"
 )
 
 func TestParseConnectionTargetSuccess(t *testing.T) {
-	testCases := map[string]pgruntime.ConnectionTarget{
+	testCases := map[string]ConnectionTarget{
 		// minimal case: just the required fields are set
 		`postgresql://alice@localhost/bookstore`: {
 			HostName:     "localhost",
@@ -37,7 +36,7 @@ func TestParseConnectionTargetSuccess(t *testing.T) {
 			if !assert.ErrEqual(t, err, nil) {
 				t.FailNow()
 			}
-			parsed, err := pgruntime.ParseConnectionTargetFromURL(u)
+			parsed, err := ParseConnectionTargetFromURL(u)
 			if !assert.ErrEqual(t, err, nil) {
 				t.FailNow()
 			}
@@ -67,14 +66,18 @@ func TestParseConnectionTargetFailure(t *testing.T) {
 			if !assert.ErrEqual(t, err, nil) {
 				t.FailNow()
 			}
-			_, err = pgruntime.ParseConnectionTargetFromURL(u)
+			_, err = ParseConnectionTargetFromURL(u)
 			assert.ErrEqual(t, err, "in ParseConnectionTargetFromURL: "+expected)
 		})
 	}
 }
 
 func TestSerializeConnectionOptions(t *testing.T) {
-	ct := pgruntime.ConnectionTarget{
+	osHostname = func() (string, error) {
+		return "bar", nil
+	}
+
+	ct := ConnectionTarget{
 		HostName:     "localhost",
 		UserName:     "alice",
 		DatabaseName: "bookstore",
@@ -83,29 +86,62 @@ func TestSerializeConnectionOptions(t *testing.T) {
 	// cannot merge ConnectionOptions if the string part is malformed
 	ct.ConnectionOptions = `sslmode=prefer;foo=bar`
 	ct.ExtraConnectionOptions = url.Values{"application_name": {"frontdesk"}}
+	ct.ApplicationName = ""
 	_, err := ct.IntoURL()
 	assert.ErrEqual(t, err, `in ConnectionTarget.IntoURL: malformed connection options: invalid semicolon separator in query`)
+
+	// not really a merge at all
+	ct.ConnectionOptions = ""
+	ct.ExtraConnectionOptions = nil
+	ct.ApplicationName = ""
+	u, err := ct.IntoURL()
+	if assert.ErrEqual(t, err, nil) {
+		assert.Equal(t, u.RawQuery, "")
+	}
+	ct.ApplicationName = "foo"
+	u, err = ct.IntoURL()
+	if assert.ErrEqual(t, err, nil) {
+		assert.Equal(t, u.RawQuery, `fallback_application_name=foo%40bar`)
+	}
 
 	// successful trivial merges
 	ct.ConnectionOptions = `sslmode=prefer`
 	ct.ExtraConnectionOptions = nil
-	u, err := ct.IntoURL()
+	ct.ApplicationName = ""
+	u, err = ct.IntoURL()
 	if assert.ErrEqual(t, err, nil) {
 		assert.Equal(t, u.RawQuery, `sslmode=prefer`)
+	}
+	ct.ApplicationName = "foo"
+	u, err = ct.IntoURL()
+	if assert.ErrEqual(t, err, nil) {
+		assert.Equal(t, u.RawQuery, `fallback_application_name=foo%40bar&sslmode=prefer`)
 	}
 
 	ct.ConnectionOptions = ""
 	ct.ExtraConnectionOptions = url.Values{"application_name": {"frontdesk"}}
+	ct.ApplicationName = ""
 	u, err = ct.IntoURL()
 	if assert.ErrEqual(t, err, nil) {
 		assert.Equal(t, u.RawQuery, `application_name=frontdesk`)
+	}
+	ct.ApplicationName = "foo"
+	u, err = ct.IntoURL()
+	if assert.ErrEqual(t, err, nil) {
+		assert.Equal(t, u.RawQuery, `application_name=frontdesk&fallback_application_name=foo%40bar`)
 	}
 
 	// successful complex merge
 	ct.ConnectionOptions = `sslmode=prefer`
 	ct.ExtraConnectionOptions = url.Values{"application_name": {"frontdesk"}}
+	ct.ApplicationName = ""
 	u, err = ct.IntoURL()
 	if assert.ErrEqual(t, err, nil) {
 		assert.Equal(t, u.RawQuery, `application_name=frontdesk&sslmode=prefer`)
+	}
+	ct.ApplicationName = "foo"
+	u, err = ct.IntoURL()
+	if assert.ErrEqual(t, err, nil) {
+		assert.Equal(t, u.RawQuery, `application_name=frontdesk&fallback_application_name=foo%40bar&sslmode=prefer`)
 	}
 }
