@@ -4,15 +4,21 @@
 package pgtest
 
 import (
+	"context"
 	"fmt"
 
 	"go.xyrillian.de/gg/assert"
+	"go.xyrillian.de/gg/gsql"
 )
 
 // Snapshot contains a set of SQL statements.
 // Instances are produced by methods of [Tracker].
 type Snapshot struct {
 	t assert.TestingTB
+}
+
+func newSnapshot(ctx context.Context, db gsql.Handle, topo topology) (Snapshot, error) {
+	panic("TODO")
 }
 
 // AssertEmpty is a shorthand for AssertEqual("").
