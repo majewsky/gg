@@ -1,5 +1,6 @@
 /build/
 !/build/.gitkeep
+/go.work.sum
 
 # ignore /testing/.testdb both as a symlink (if $PGRUNTIME_TESTDB_PATH is set) and as a directory (otherwise)
 /testing/.testdb
