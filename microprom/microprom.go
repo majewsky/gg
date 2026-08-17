@@ -62,6 +62,10 @@ func (i MetricFamilyInfo) validate(name MetricFamilyName) error {
 //
 //	^[a-zA-Z_:][a-zA-Z0-9_:]*$
 //
+// Package microprom does not implement escaping at the moment;
+// metric family names not matching this pattern are invalid and will cause a panic.
+// This restriction may be lifted in a future version.
+//
 // [OpenMetrics 1.0]: https://prometheus.io/docs/specs/om/open_metrics_spec/
 type MetricFamilyName string
 
@@ -109,7 +113,7 @@ type metric struct {
 
 // NewMetricSet constructs an initially empty [MetricSet] that accepts metrics for the given metric families.
 func NewMetricSet(syntax Syntax, families map[MetricFamilyName]MetricFamilyInfo) *MetricSet {
-	if syntax != SyntaxOpenMetricsV1 {
+	if syntax > SyntaxOpenMetricsV1 {
 		panic(fmt.Sprintf("unknown value for Syntax: %d", syntax))
 	}
 	m := make(map[MetricFamilyName][]metric, len(families))
@@ -138,15 +142,17 @@ func (ms *MetricSet) Add(name MetricFamilyName, labels Labels, value float64) {
 
 // Syntax is an enum, defining which exposition format will be used by [MetricSet].
 //
-//   - SyntaxOpenMetricsV1 corresponds to the [OpenMetrics 1.0] text format,
-//     which is functionally equivalent to the Prometheus text format v0.0.4.
-//   - Additional formats may be added in the future
-//     (e.g. OpenMetrics 2.0, once it is stabilized).
+//   - SyntaxPrometheusLegacy corresponds to the [Prometheus Text Format].
+//   - SyntaxOpenMetricsV1 corresponds to the [OpenMetrics 1.0] text format
+//   - Additional formats may be added in the future (e.g. OpenMetrics 2.0, once it is stabilized).
 //
+// [Prometheus Text Format]: https://prometheus.io/docs/instrumenting/exposition_formats/
 // [OpenMetrics 1.0]: https://prometheus.io/docs/specs/om/open_metrics_spec/
-type Syntax int
+type Syntax uint
 
 const (
+	// SyntaxPrometheusLegacy corresponds to the Prometheus text format (currently version 0.0.4).
+	SyntaxPrometheusLegacy Syntax = iota
 	// SyntaxOpenMetricsV1 corresponds to the OpenMetrics 1.0 text format.
-	SyntaxOpenMetricsV1 Syntax = iota
+	SyntaxOpenMetricsV1
 )

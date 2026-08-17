@@ -12,6 +12,8 @@ import (
 	"net/http"
 	"slices"
 	"strings"
+
+	"go.xyrillian.de/gg/internal/accept"
 )
 
 // Handler is an [http.Handler] rendering metrics in Prometheus exposition formats.
@@ -42,29 +44,57 @@ var _ http.Handler = Handler{}
 
 // ServeHTTP implements the [http.Handler] interface.
 func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	ms := NewMetricSet(SyntaxOpenMetricsV1, h.Families)
+	acceptedFormat, ok := accept.ParseHeader(r.Header["Accept"]).Negotiate(
+		// The way that Prometheus handles `Accept` is insane.
+		// They put a billion parameters in there, with `escaping=` possibly depending on server configuration.
+		// (I have not read enough of the Prometheus source code to be sure.)
+		// The easiest way for us is to negotiate for all possible combinations.
+		//
+		// Note that it is fine for the client to request less specific formats, e.g. just "application/openmetrics-text",
+		// in which case the first match will be used.
+		// Each set of similar choices has `escaping=underscores` on top each time because that's the default escaping scheme in promhttp.
+		"text/plain; version=0.0.4; charset=utf-8; escaping=underscores",
+		"text/plain; version=0.0.4; charset=utf-8; escaping=allow-utf-8",
+		"text/plain; version=0.0.4; charset=utf-8; escaping=dots",
+		"text/plain; version=0.0.4; charset=utf-8; escaping=values",
+		"application/openmetrics-text; version=1.0.0; charset=utf-8; escaping=underscores",
+		"application/openmetrics-text; version=1.0.0; charset=utf-8; escaping=allow-utf-8",
+		"application/openmetrics-text; version=1.0.0; charset=utf-8; escaping=dots",
+		"application/openmetrics-text; version=1.0.0; charset=utf-8; escaping=values",
+	).Unpack()
+	if !ok {
+		http.Error(w, "supported formats are text/plain and application/openmetrics-text", http.StatusNotAcceptable)
+		return
+	}
+
+	w.Header().Set("Content-Type", acceptedFormat)
+	syntax := SyntaxPrometheusLegacy
+	if strings.HasPrefix(acceptedFormat, "application/openmetrics-text; version=1.0.0;") {
+		syntax = SyntaxOpenMetricsV1
+	}
+
+	ms := NewMetricSet(syntax, h.Families)
 	err := h.Collect(r.Context(), ms)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return
 	}
 
-	// TODO: add support for `Content-Type: application/openmetrics-text; version=1.0.0; charset=utf-8` if requested in `Accept` header
-	w.Header().Set("Content-Type", "text/plain; version=0.0.4; charset=utf-8; escaping=underscores")
 	w.WriteHeader(http.StatusOK)
-
 	bw := bufio.NewWriter(w)
 	if h.SortOutput {
 		for _, familyName := range slices.Sorted(maps.Keys(h.Families)) {
-			h.printMetricFamily(bw, familyName, h.Families[familyName], ms.metrics[familyName])
+			h.printMetricFamily(bw, syntax, familyName, h.Families[familyName], ms.metrics[familyName])
 		}
 	} else {
 		for familyName, familyInfo := range h.Families {
-			h.printMetricFamily(bw, familyName, familyInfo, ms.metrics[familyName])
+			h.printMetricFamily(bw, syntax, familyName, familyInfo, ms.metrics[familyName])
 		}
 	}
 
-	fmt.Fprint(bw, "# EOF\n")
+	if syntax != SyntaxPrometheusLegacy {
+		fmt.Fprint(bw, "# EOF\n")
+	}
 	err = bw.Flush()
 	if err != nil {
 		// We do not have a way to log this because we do not know what log library the application uses,
@@ -75,7 +105,7 @@ func (h Handler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (h Handler) printMetricFamily(w io.Writer, familyName MetricFamilyName, info MetricFamilyInfo, metrics []metric) {
+func (h Handler) printMetricFamily(w io.Writer, syntax Syntax, familyName MetricFamilyName, info MetricFamilyInfo, metrics []metric) {
 	if len(metrics) == 0 {
 		return
 	}
@@ -92,6 +122,11 @@ func (h Handler) printMetricFamily(w io.Writer, familyName MetricFamilyName, inf
 		panic("unreachable") // NewMetricSet() should have rejected unknown MetricType values
 	}
 
+	if syntax == SyntaxPrometheusLegacy {
+		// Prometheus Text Format does not distinguish between metric names and metric family names
+		familyName = MetricFamilyName(metricName)
+	}
+
 	fmt.Fprintf(w, "# HELP %s %s\n# TYPE %s %s\n", familyName, info.Help, familyName, metricTypeNames[info.Type])
 
 	if h.SortOutput {
@@ -101,9 +136,36 @@ func (h Handler) printMetricFamily(w io.Writer, familyName MetricFamilyName, inf
 	}
 	for _, m := range metrics {
 		if m.labels == "" {
-			fmt.Fprintf(w, "%s %g\n", metricName, m.value)
+			fmt.Fprintf(w, "%s ", metricName)
 		} else {
-			fmt.Fprintf(w, "%s{%s} %g\n", metricName, m.labels, m.value)
+			fmt.Fprintf(w, "%s{%s} ", metricName, m.labels)
+		}
+		if syntax == SyntaxPrometheusLegacy {
+			fmt.Fprintf(w, "%g\n", m.value)
+		} else {
+			// TODO: ugly
+			fi := floatInspector{inner: w}
+			fmt.Fprintf(&fi, "%g", m.value)
+			if fi.clearlyFloat {
+				fmt.Fprintf(w, "\n")
+			} else {
+				fmt.Fprintf(w, ".0\n")
+			}
 		}
 	}
+}
+
+type floatInspector struct {
+	inner        io.Writer
+	clearlyFloat bool
+}
+
+func (fi *floatInspector) Write(buf []byte) (int, error) {
+	if slices.Contains(buf, '.') {
+		fi.clearlyFloat = true
+	}
+	if slices.Contains(buf, 'e') {
+		fi.clearlyFloat = true
+	}
+	return fi.inner.Write(buf)
 }
