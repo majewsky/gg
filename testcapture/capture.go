@@ -1,9 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 // SPDX-License-Identifier: Apache-2.0
 
-// Package testcapture contains [Capture], a function that executes test code in a way that captures error messages and side effects without failing the overall test.
-//
-// The main intended use case is testing test assertions where calls to e.g. t.Error() are an expected part of a successful test run.
 package testcapture
 
 import (
@@ -17,8 +14,6 @@ import (
 	"slices"
 	"sync"
 	"sync/atomic"
-
-	"go.xyrillian.de/gg/assert"
 )
 
 // Result is returned by func [Capture].
@@ -81,11 +76,11 @@ const (
 	MessageTypeOutput MessageType = "output"
 )
 
-// Capture executes a test function with a stub implementation of [assert.TestingTB] that captures all calls to it.
+// Capture executes a test function with a stub implementation of [TestingTB] that captures all calls to it.
 // It is intended for unit-testing test assertions.
 //
 // The name argument is what will be reported in t.Name() within the test.
-func Capture(ctx context.Context, name string, test func(assert.TestingTB)) Result {
+func Capture(ctx context.Context, name string, test func(TestingTB)) Result {
 	r := Result{
 		Outcome: OutcomeFinished, // can be overridden by Fail() or SkipNow()
 	}
@@ -93,7 +88,7 @@ func Capture(ctx context.Context, name string, test func(assert.TestingTB)) Resu
 	return r
 }
 
-// capturer is the implementation of [assert.TestingTB] used by func [Capture].
+// capturer is the implementation of [TestingTB] used by func [Capture].
 type capturer struct {
 	context  context.Context
 	cleanups []func()
@@ -109,7 +104,7 @@ type capturer struct {
 	nonlocalMutex sync.Mutex   // lock for non-local effects like Setenv() or filesystem operations
 }
 
-func executeCapture(ctx context.Context, name string, r *Result, test func(assert.TestingTB)) {
+func executeCapture(ctx context.Context, name string, r *Result, test func(TestingTB)) {
 	ctx, cancel := context.WithCancel(ctx)
 	t := capturer{
 		context:  ctx,
@@ -196,7 +191,7 @@ func collectArtifacts(dirPath string) (map[string]string, error) {
 	return result, os.RemoveAll(dirPath)
 }
 
-// ArtifactDir implements the [assert.TestingTB] interface.
+// ArtifactDir implements the [TestingTB] interface.
 func (t *capturer) ArtifactDir() string {
 	t.stateMutex.Lock()
 	defer t.stateMutex.Unlock()
@@ -221,7 +216,7 @@ func (t *capturer) ArtifactDir() string {
 	return t.state.ArtifactDir
 }
 
-// Attr implements the [assert.TestingTB] interface.
+// Attr implements the [TestingTB] interface.
 func (t *capturer) Attr(key, value string) {
 	t.resultMutex.Lock()
 	defer t.resultMutex.Unlock()
@@ -231,7 +226,7 @@ func (t *capturer) Attr(key, value string) {
 	t.result.Attrs[key] = value
 }
 
-// Chdir implements the [assert.TestingTB] interface.
+// Chdir implements the [TestingTB] interface.
 func (t *capturer) Chdir(dir string) {
 	t.doChdir(dir)
 
@@ -269,82 +264,82 @@ func (t *capturer) doChdir(dir string) {
 	})
 }
 
-// Cleanup implements the [assert.TestingTB] interface.
+// Cleanup implements the [TestingTB] interface.
 func (t *capturer) Cleanup(action func()) {
 	t.cleanupsMutex.Lock()
 	defer t.cleanupsMutex.Unlock()
 	t.cleanups = append(t.cleanups, action)
 }
 
-// Context implements the [assert.TestingTB] interface.
+// Context implements the [TestingTB] interface.
 func (t *capturer) Context() context.Context {
 	return t.context
 }
 
-// Error implements the [assert.TestingTB] interface.
+// Error implements the [TestingTB] interface.
 func (t *capturer) Error(args ...any) {
 	t.Log(args...)
 	t.Fail()
 }
 
-// Errorf implements the [assert.TestingTB] interface.
+// Errorf implements the [TestingTB] interface.
 func (t *capturer) Errorf(format string, args ...any) {
 	t.Logf(format, args...)
 	t.Fail()
 }
 
-// Fail implements the [assert.TestingTB] interface.
+// Fail implements the [TestingTB] interface.
 func (t *capturer) Fail() {
 	t.resultMutex.Lock()
 	defer t.resultMutex.Unlock()
 	t.result.Outcome = OutcomeFailed
 }
 
-// Failed implements the [assert.TestingTB] interface.
+// Failed implements the [TestingTB] interface.
 func (t *capturer) Failed() bool {
 	t.resultMutex.RLock()
 	defer t.resultMutex.RUnlock()
 	return t.result.Outcome == OutcomeFailed
 }
 
-// FailNow implements the [assert.TestingTB] interface.
+// FailNow implements the [TestingTB] interface.
 func (t *capturer) FailNow() {
 	panic(OutcomeFailed)
 }
 
-// Fatal implements the [assert.TestingTB] interface.
+// Fatal implements the [TestingTB] interface.
 func (t *capturer) Fatal(args ...any) {
 	t.Log(args...)
 	t.FailNow()
 }
 
-// Fatalf implements the [assert.TestingTB] interface.
+// Fatalf implements the [TestingTB] interface.
 func (t *capturer) Fatalf(format string, args ...any) {
 	t.Logf(format, args...)
 	t.FailNow()
 }
 
-// Helper implements the [assert.TestingTB] interface.
+// Helper implements the [TestingTB] interface.
 func (t *capturer) Helper() {
 	// no-op because we do not collect file and line information at the moment
 }
 
-// Log implements the [assert.TestingTB] interface.
+// Log implements the [TestingTB] interface.
 func (t *capturer) Log(args ...any) {
 	t.pushOutput(fmt.Append(nil, args...), MessageTypeLog)
 }
 
-// Logf implements the [assert.TestingTB] interface.
+// Logf implements the [TestingTB] interface.
 func (t *capturer) Logf(format string, args ...any) {
 	t.pushOutput(fmt.Appendf(nil, format, args...), MessageTypeLog)
 }
 
-// Name implements the [assert.TestingTB] interface.
+// Name implements the [TestingTB] interface.
 func (t *capturer) Name() string {
 	return t.name
 }
 
-// Output implements the [assert.TestingTB] interface.
+// Output implements the [TestingTB] interface.
 func (t *capturer) Output() io.Writer {
 	return outputCapturer{t}
 }
@@ -359,7 +354,7 @@ func (c outputCapturer) Write(buf []byte) (int, error) {
 	return len(buf), nil
 }
 
-// Setenv implements the [assert.TestingTB] interface.
+// Setenv implements the [TestingTB] interface.
 func (t *capturer) Setenv(key, value string) {
 	t.nonlocalMutex.Lock()
 	defer t.nonlocalMutex.Unlock()
@@ -376,31 +371,31 @@ func (t *capturer) Setenv(key, value string) {
 	})
 }
 
-// Skip implements the [assert.TestingTB] interface.
+// Skip implements the [TestingTB] interface.
 func (t *capturer) Skip(args ...any) {
 	t.Log(args...)
 	t.SkipNow()
 }
 
-// Skipf implements the [assert.TestingTB] interface.
+// Skipf implements the [TestingTB] interface.
 func (t *capturer) Skipf(format string, args ...any) {
 	t.Logf(format, args...)
 	t.SkipNow()
 }
 
-// SkipNow implements the [assert.TestingTB] interface.
+// SkipNow implements the [TestingTB] interface.
 func (t *capturer) SkipNow() {
 	panic(OutcomeSkipped)
 }
 
-// Skipped implements the [assert.TestingTB] interface.
+// Skipped implements the [TestingTB] interface.
 func (t *capturer) Skipped() bool {
 	t.resultMutex.RLock()
 	defer t.resultMutex.RUnlock()
 	return t.result.Outcome == OutcomeSkipped
 }
 
-// TempDir implements the [assert.TestingTB] interface.
+// TempDir implements the [TestingTB] interface.
 func (t *capturer) TempDir() string {
 	path, err := pickTempdir()
 	if err != nil {

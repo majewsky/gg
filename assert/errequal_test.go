@@ -11,7 +11,6 @@ import (
 	"testing"
 
 	"go.xyrillian.de/gg/assert"
-	"go.xyrillian.de/gg/testcapture"
 )
 
 func TestErrEqual(t *testing.T) {
@@ -67,13 +66,10 @@ func TestErrEqual(t *testing.T) {
 	}, `expected an error matching /foo/, but got no error`)
 
 	// test matching against unexpected type
-	result := testcapture.Capture(t.Context(), t.Name(), func(t assert.TestingTB) {
+	result := assert.PanicsWith[string](t, func() {
 		assert.ErrEqual(t, errors.New("42"), 42)
 	})
-	assert.Equal(t, result, testcapture.Result{
-		Outcome: testcapture.OutcomePanicked,
-		Panic:   "cannot handle `expected` of type int",
-	})
+	assert.Equal(t, result, "cannot handle `expected` of type int")
 
 	// an earlier version had a bug because this call caused reflect.Value.IsNil() to be called on a value of kind Struct
 	expectErrors(t, func(t assert.TestingTB) {

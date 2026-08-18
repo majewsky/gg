@@ -3,6 +3,13 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.14.0 (TBD)
+
+Changes:
+
+- Add package microprom.
+- Add `assert.Panics()` and `assert.PanicsWith()`.
+
 # v1.13.3 (2026-08-05)
 
 Changes:
