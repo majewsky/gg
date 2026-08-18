@@ -1,7 +1,6 @@
 // SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 // SPDX-License-Identifier: Apache-2.0
 
-// TODO: unit test coverage (use the examples from RFC 9110)
 package accept
 
 import (
@@ -50,10 +49,16 @@ func ParseHeader(headers []string) Header {
 			if err != nil {
 				return none
 			}
+			if _, ok := params["q"]; ok {
+				// malformed q-value that was not caught by the regex
+				return none
+			}
 			opt := option{mediaType, params, 1.0}
 			if weightStr != "" {
 				opt.Weight, err = strconv.ParseFloat(weightStr, 64)
 				if err != nil {
+					// defense in depth: unreachable because the regex match has
+					// extremely constrained grammar for `weightStr`
 					return none
 				}
 				if opt.Weight > 1.0 { // this boundary is easier to express here than in the regex
@@ -94,7 +99,7 @@ func (h Header) Negotiate(mediaTypes ...string) Option[string] {
 
 	// we cannot choose from an empty set of options (this can only happen if the
 	// caller gave us no or only malformed media types)
-	if len(mediaTypes) == 0 {
+	if len(offers) == 0 {
 		return None[string]()
 	}
 
