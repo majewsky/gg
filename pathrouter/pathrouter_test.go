@@ -14,7 +14,6 @@ import (
 
 	"go.xyrillian.de/gg/assert"
 	pr "go.xyrillian.de/gg/pathrouter"
-	"go.xyrillian.de/gg/testcapture"
 )
 
 func TestRouting(t *testing.T) {
@@ -157,11 +156,8 @@ func TestRouting(t *testing.T) {
 func TestPanics(t *testing.T) {
 	check := func(expected string, action func()) {
 		t.Helper()
-		result := testcapture.Capture(t.Context(), t.Name(), func(t assert.TestingTB) { action() })
-		assert.Equal(t, result, testcapture.Result{
-			Outcome: testcapture.OutcomePanicked,
-			Panic:   expected,
-		})
+		actual := assert.PanicsWith[string](t, action)
+		assert.Equal(t, actual, expected)
 	}
 
 	check(`matcher within CatchAllVariable() may not accept unlimited path lengths`, func() {

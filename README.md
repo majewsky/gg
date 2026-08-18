@@ -28,6 +28,7 @@ My personal extension of the standard library.
 ### Addons for net/http
 
 - [assetembed](./assetembed/): HTTP handler for efficiently serving embedded assets using the cache-busting pattern
+- [microprom](./microprom/): a minimal alternative implementation of [promhttp](https://pkg.go.dev/github.com/prometheus/client_golang/prometheus/promhttp)
 - [pathrouter](./pathrouter/): HTTP router that differentiates endpoints based on paths without any regex matching
 
 ### Addons for testing
