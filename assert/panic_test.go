@@ -30,6 +30,6 @@ func TestPanics(t *testing.T) {
 	})
 	assert.Equal(t, tc.Outcome, testcapture.OutcomeFailed)
 	assert.Equal(t, tc.Messages, []testcapture.Message{
-		testcapture.Log("panicked with incorrect type: expected string, but got 42"),
+		testcapture.Log("panicked with incorrect type: expected string, but got int: 42"),
 	})
 }

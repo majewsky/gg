@@ -12,6 +12,7 @@ import (
 )
 
 func TestAcceptWithHeader(t *testing.T) {
+	// asking for a wide range of formats, including wildcard matches
 	h := accept.ParseHeader([]string{"text/*;q=0.3, text/plain;format=flowed, text/plain;format=fixed;q=0.4, */*;q=0.5"})
 
 	assert.Equal(t, h.Negotiate(
@@ -38,6 +39,18 @@ func TestAcceptWithHeader(t *testing.T) {
 		"text/markdown", // matches with q=0.3
 		"text/plain",    // matches with q=0.3 (but first wins)
 	), Some("text/markdown"))
+
+	// asking for specific formats only
+	h = accept.ParseHeader([]string{"image/png, image/jpeg"})
+
+	assert.Equal(t, h.Negotiate(
+		"text/plain",
+		"image/png",
+	), Some("image/png"))
+
+	assert.Equal(t, h.Negotiate(
+		"text/plain",
+	), None[string]())
 }
 
 func TestAcceptWithoutHeader(t *testing.T) {

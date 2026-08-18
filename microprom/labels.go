@@ -54,7 +54,7 @@ func (ms *MetricSet) FormatLabels(n LabelNames, values ...string) Labels {
 	// NOTE on API structure: This is not part of ms.Add() to allow reusing label sets for multiple metrics.
 
 	if len(n.names) != len(values) {
-		panic("arguments are not of equal length")
+		panic(fmt.Sprintf("expected %d label values, but got %d", len(n.names), len(values)))
 	}
 	if len(n.names) == 0 {
 		return ""

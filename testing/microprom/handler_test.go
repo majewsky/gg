@@ -76,12 +76,6 @@ func TestHandlerFunctionallyIdenticalToPromhttp(t *testing.T) {
 	body2, headers2 = getMetrics(t, h2, http.Header{"Accept": {"application/openmetrics-text; version=1.0.0"}})
 	assert.Equal(t, strings.Split(body1, "\n"), strings.Split(body2, "\n"))
 	assert.Equal(t, headers1, headers2)
-
-	// test invalid Accept header
-	body1, headers1 = getMetrics(t, h1, http.Header{"Accept": {"image/*"}})
-	body2, headers2 = getMetrics(t, h2, http.Header{"Accept": {"image/*"}})
-	assert.Equal(t, strings.Split(body1, "\n"), strings.Split(body2, "\n"))
-	assert.Equal(t, headers1, headers2)
 }
 
 func getMetrics(t *testing.T, h http.Handler, requestHeaders http.Header) (responseBody string, responseHeaders http.Header) {

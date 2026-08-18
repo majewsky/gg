@@ -135,7 +135,7 @@ func NewMetricSet(syntax Syntax, families map[MetricFamilyName]MetricFamilyInfo)
 func (ms *MetricSet) Add(name MetricFamilyName, labels Labels, value float64) {
 	_, ok := ms.metrics[name]
 	if !ok {
-		panic("no such family: " + name)
+		panic("no such family: " + string(name))
 	}
 	ms.metrics[name] = append(ms.metrics[name], metric{labels, value})
 }

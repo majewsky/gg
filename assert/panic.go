@@ -26,7 +26,7 @@ func PanicsWith[T any](t TestingTB, action func()) T {
 	value, ok := result.Panic.(T)
 	if !ok {
 		var zero T
-		t.Fatalf("panicked with incorrect type: expected %T, but got %#v", zero, result.Panic)
+		t.Fatalf("panicked with incorrect type: expected %T, but got %T: %#v", zero, result.Panic, result.Panic)
 	}
 	return value
 }

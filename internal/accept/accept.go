@@ -103,6 +103,11 @@ func (h Header) Negotiate(mediaTypes ...string) Option[string] {
 		return None[string]()
 	}
 
+	// if nothing was offered, we default to our own preferred option
+	if len(h.options) == 0 {
+		return Some(offers[0].OriginalValue)
+	}
+
 	// NOTE: ParseHeader() sorts options by descending weight, so the first match wins.
 	for _, opt := range h.options {
 	MEDIATYPE:
@@ -128,5 +133,5 @@ func (h Header) Negotiate(mediaTypes ...string) Option[string] {
 		}
 	}
 
-	return Some(offers[0].OriginalValue)
+	return None[string]()
 }
