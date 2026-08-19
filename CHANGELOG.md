@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.14.1 (TBD)
+
+Changes:
+
+- Improve presentation of string literals in `assert.ErrEqual()` output (same as for `assert.Equal()` in v1.11.0).
+
 # v1.14.0 (2026-08-18)
 
 Changes:
