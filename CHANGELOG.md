@@ -3,10 +3,13 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
-# v1.14.1 (TBD)
+# v1.15.0 (TBD)
 
 Changes:
 
+- gsql: Add an additional `*sql.TxOptions` argument to `WithinTransaction` methods.
+  This constitutes a breaking change, which I find acceptable because there are no known users of this function yet.
+  The alternative would have been to pollute the namespace with additional methods (like for `Begin` vs `BeginTx`).
 - Improve presentation of string literals in `assert.ErrEqual()` output (same as for `assert.Equal()` in v1.11.0).
 
 # v1.14.0 (2026-08-18)
