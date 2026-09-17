@@ -7,6 +7,11 @@ SPDX-License-Identifier: Apache-2.0
 
 Changes:
 
+- Add package oblast.
+  This used to live at <https://git.xyrillian.de/go-oblast/>, but for the 1.x series,
+  I'm moving nearly everything from `go.xyrillian.de/oblast` to `go.xyrillian.de/gg/oblast` because removing the module boundary
+  between gsql and oblast opens up some code reuse opportunities and may help future optimizations.
+  The only API surface that remains in the old location for now is `type RuntimeIndex`, because I want to contemplate method naming once again before stabilizing it.
 - gsql: Add NoneIfNoRows.
   This replaces "OrNone" variants of methods in Oblast, e.g. SelectOne() and then also SelectOneOrNone().
 

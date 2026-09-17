@@ -22,6 +22,15 @@ build/cover.html: build/cover.out
 	@printf "\e[1;36m>> go tool cover\e[0m\n"
 	go tool cover -html $< -o $@
 
+benchmark-oblast-orm: FORCE
+	@cd benchmark && go test -bench BenchmarkORM -benchmem ./oblast
+
+benchmark-oblast-postgres: FORCE
+	@cd benchmark && go test -bench BenchmarkPostgres -benchmem ./oblast
+
+benchamrk-pathrouter: FORCE
+	@cd benchmark && go test -bench . -benchmem ./pathrouter
+
 help: FORCE
 	@printf "\n"
 	@printf "\e[1mUsage:\e[0m\n"
