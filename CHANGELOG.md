@@ -3,6 +3,13 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.16.0 (TBD)
+
+Changes:
+
+- gsql: Add NoneIfNoRows.
+  This replaces "OrNone" variants of methods in Oblast, e.g. SelectOne() and then also SelectOneOrNone().
+
 # v1.15.0 (2026-09-08)
 
 Changes:
