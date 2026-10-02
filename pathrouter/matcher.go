@@ -51,8 +51,8 @@
 // so any slashes that were encoded as %2F in the URL path will be considered part of a path element instead of a boundary.
 //
 // For instance, using the example above, the URL path "/v1/objects/42/23" would not match and generate a 404 response,
-// but the URL path "/v1/objects/42%2F23" would match and invoke (e.g. with method GET) the GetObject handler with vars["id"] = "42/23".
-// Like in this example, [HandlerFunc] will receive unescaped values in its vars argument.
+// but the URL path "/v1/objects/42%2F23" would match and invoke (e.g. with method GET) the GetObject handler with rc.Variable("id") = "42/23".
+// Like in this example, [HandlerFunc] will receive a [Context] in which [Context.Variable] calls returns unescaped values.
 //
 // # Implicit normalizations
 //
@@ -97,7 +97,7 @@ type Matcher interface {
 }
 
 type realMatcher struct {
-	accept func(path []string, vars map[string]string) HandlerFunc
+	accept func(path []string, rc Context) HandlerFunc
 
 	// The smallest len(path) that accept() can accept.
 	minLength int
@@ -115,12 +115,12 @@ func (m realMatcher) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 // TryServeHTTP implements the [Matcher] interface.
 func (m realMatcher) TryServeHTTP(w http.ResponseWriter, r *http.Request) bool {
 	path := extractPath(r.URL)
-	vars := make(map[string]string)
-	handlerFunc := m.accept(path, vars)
+	rc := newContext()
+	handlerFunc := m.accept(path, rc)
 	if handlerFunc == nil {
 		return false
 	} else {
-		handlerFunc(w, r, vars)
+		handlerFunc(w, r, rc)
 		return true
 	}
 }

@@ -3,6 +3,14 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.17.0 (TBD)
+
+Changes:
+
+- pathrouter: Replace `map[string]string` argument in `HandlerFunc` signature by new type `Context`.
+  This constitutes a breaking change, which I find acceptable because there are no known users of this package yet.
+  Adding an explicit type here allows the interface of package pathrouter to grow in the future.
+
 # v1.16.0 (2026-09-17)
 
 Changes:

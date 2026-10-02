@@ -43,9 +43,9 @@ func here(matcher realMatcher) Matcher {
 	return realMatcher{
 		minLength: 0,
 		maxLength: Some(1),
-		accept: func(path []string, vars map[string]string) HandlerFunc {
+		accept: func(path []string, rc Context) HandlerFunc {
 			if len(path) == 0 || (len(path) == 1 && path[0] == "") {
-				return matcher.accept(nil, vars)
+				return matcher.accept(nil, rc)
 			}
 			return nil
 		},

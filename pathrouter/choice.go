@@ -48,9 +48,9 @@ func choice(matchers []realMatcher) Matcher {
 	return realMatcher{
 		minLength: slices.Min(minLengths),
 		maxLength: maxLength,
-		accept: func(path []string, vars map[string]string) HandlerFunc {
+		accept: func(path []string, rc Context) HandlerFunc {
 			for _, m := range matchers {
-				hf := m.accept(path, vars)
+				hf := m.accept(path, rc)
 				if hf != nil {
 					return hf
 				}

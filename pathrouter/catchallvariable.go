@@ -10,9 +10,10 @@ import (
 )
 
 // CatchAllVariable is a [Matcher] that accepts subpaths with an arbitrary number of path elements.
-// The value of any amount of leading path elements will be collected into vars[name],
+// The value of any amount of leading path elements will be collected into the [Context],
 // such that the remainder is accepted by the next matcher.
-// At least one element must be collected into vars[name].
+// At least one element must be collected.
+// The full sequence of collected path elements can be retrieved with [Context.Variable].
 //
 // CatchAllVariable() may appear at any point within the routing tree,
 // but it may not contain another CatchAllVariable() anywhere within it.
@@ -32,7 +33,7 @@ func catchAllVariable(name string, matcher realMatcher) Matcher {
 		panic("matcher within CatchAllVariable() may not accept unlimited path lengths")
 	}
 
-	accept := func(path []string, vars map[string]string) HandlerFunc {
+	accept := func(path []string, rc Context) HandlerFunc {
 		for length := innerMinLength; length <= innerMaxLength; length++ {
 			if length > len(path) {
 				break
@@ -42,11 +43,11 @@ func catchAllVariable(name string, matcher realMatcher) Matcher {
 				continue
 			}
 
-			handlerFunc := matcher.accept(subpath, vars)
+			handlerFunc := matcher.accept(subpath, rc)
 			if handlerFunc == nil {
 				continue
 			}
-			vars[name] = pathUnescape(strings.Join(caughtPath, "/"))
+			rc.vars[name] = pathUnescape(strings.Join(caughtPath, "/"))
 			return handlerFunc
 		}
 		return nil

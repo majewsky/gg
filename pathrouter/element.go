@@ -24,11 +24,11 @@ func element(value string, matcher realMatcher) Matcher {
 	return realMatcher{
 		minLength: matcher.minLength + 1,
 		maxLength: options.Map(matcher.maxLength, increment),
-		accept: func(path []string, vars map[string]string) HandlerFunc {
+		accept: func(path []string, rc Context) HandlerFunc {
 			if len(path) == 0 || path[0] != value {
 				return nil
 			}
-			return matcher.accept(path[1:], vars)
+			return matcher.accept(path[1:], rc)
 		},
 	}
 }

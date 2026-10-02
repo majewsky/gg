@@ -16,7 +16,7 @@ import (
 //
 // Package pathrouter passes variables explicitly like this, instead of via [context.Context.WithValue],
 // because doing so imposes a performance penalty for every usage of the respective context.
-type HandlerFunc = func(w http.ResponseWriter, r *http.Request, vars map[string]string)
+type HandlerFunc = func(w http.ResponseWriter, r *http.Request, rc Context)
 
 // ByMethod is a set of request handlers matching the same request path, keyed on request method.
 // It is commonly constructed as a literal using the respective constants from the net/http package, such as [http.MethodGet].
@@ -62,10 +62,10 @@ func Handlers(m ByMethod) Matcher {
 
 	// precomputations for accept()
 	allowHeader := m.buildAllowHeader()
-	serve := func(w http.ResponseWriter, r *http.Request, vars map[string]string) {
+	serve := func(w http.ResponseWriter, r *http.Request, rc Context) {
 		handler, ok := m[r.Method]
 		if ok {
-			handler(w, r, vars)
+			handler(w, r, rc)
 			return
 		}
 
@@ -80,7 +80,7 @@ func Handlers(m ByMethod) Matcher {
 	return realMatcher{
 		minLength: 0,
 		maxLength: Some(0),
-		accept: func(path []string, vars map[string]string) HandlerFunc {
+		accept: func(path []string, rc Context) HandlerFunc {
 			if len(path) != 0 {
 				return nil
 			}
