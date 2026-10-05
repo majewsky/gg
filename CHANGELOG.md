@@ -3,6 +3,16 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.18.0 (TBD)
+
+Changes:
+
+- pathrouter: Remove `type Context` argument from `HandlerFunc` signature.
+  When first using pathrouter in a real-world application, the extra argument proved cumbersome,
+  so I settled on clever shenanigans within the library in order to make application code more readable.
+  I really hate that I'm breaking compatiblity yet again, but in the end, user experience matters most.
+  My takeaway is that new packages should go through a period of declared instability until the first major users are done.
+
 # v1.17.0 (2026-10-02)
 
 Changes:

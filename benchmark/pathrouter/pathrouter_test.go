@@ -62,9 +62,9 @@ func buildMuxRouterForDistributionAPI() http.Handler {
 }
 
 func buildPathrouterForDistributionAPI() http.Handler {
-	handle := func(endpointName string) pr.HandlerFunc {
+	handle := func(endpointName string) http.HandlerFunc {
 		msg := endpointName + " is forbidden"
-		return func(w http.ResponseWriter, r *http.Request, vars map[string]string) {
+		return func(w http.ResponseWriter, r *http.Request) {
 			http.Error(w, msg, http.StatusForbidden)
 		}
 	}

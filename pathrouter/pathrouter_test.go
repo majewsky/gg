@@ -19,10 +19,10 @@ import (
 func TestRouting(t *testing.T) {
 	// helper methods
 	varRx := regexp.MustCompile(`\$\w+`)
-	h := func(status int, msgBase string) pr.HandlerFunc {
-		return func(w http.ResponseWriter, r *http.Request, rc pr.Context) {
+	h := func(status int, msgBase string) http.HandlerFunc {
+		return func(w http.ResponseWriter, r *http.Request) {
 			msg := varRx.ReplaceAllStringFunc(msgBase, func(match string) string {
-				return rc.Variable(strings.TrimPrefix(match, "$"))
+				return pr.VariableValue(r, strings.TrimPrefix(match, "$"))
 			})
 			if r.Method == http.MethodHead {
 				w.WriteHeader(status)
