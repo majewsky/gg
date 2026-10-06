@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.19.0 (TBD)
+
+Changes:
+
+- pathrouter: Add CatchAllVariableIf() and VariableIf().
+
 # v1.18.0 (2026-10-05)
 
 Changes:

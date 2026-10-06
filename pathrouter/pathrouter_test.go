@@ -9,6 +9,7 @@ import (
 	"net/http"
 	"net/http/httptest"
 	"regexp"
+	"strconv"
 	"strings"
 	"testing"
 
@@ -140,6 +141,23 @@ func TestRouting(t *testing.T) {
 	check("GET", "/long/path/but/no/match", "404: 404 page not found", nil)
 	check("GET", "/shortpathbutnomatch", "404: 404 page not found", nil)
 
+	// chekc CatchAllVariableIf()
+	startsWithFooBar := func(path string) bool { return strings.HasPrefix(path, "foo/bar") }
+	m = pr.CatchAllVariableIf("path", startsWithFooBar, pr.Choice(
+		pr.Element("one", pr.Handlers(pr.ByMethod{
+			http.MethodGet: h(http.StatusOK, "one $path"),
+		})),
+		pr.Element("two", pr.Element("two", pr.Handlers(pr.ByMethod{
+			http.MethodGet: h(http.StatusOK, "two $path"),
+		}))),
+	))
+
+	check("GET", "/foo/bar/baz/one", "200: one foo/bar/baz", nil)
+	check("GET", "/foo/bar/baz/two/two", "200: two foo/bar/baz", nil)
+
+	check("GET", "/foo/baz/one", "404: 404 page not found", nil)
+	check("GET", "/foo/baz/two/two", "404: 404 page not found", nil)
+
 	// check Variable()
 	m = pr.Element("nice", pr.Element("objects", pr.Variable("id", pr.Here(pr.Handlers(pr.ByMethod{
 		http.MethodPut: h(http.StatusCreated, "created object $id"),
@@ -148,9 +166,22 @@ func TestRouting(t *testing.T) {
 	check("PUT", "/nice/objects", "404: 404 page not found", nil)
 	check("PUT", "/nice/objects/", "404: 404 page not found", nil)
 	check("PUT", "/nice/objects/42", "201: created object 42", nil)
-	check("PUT", "/nice/objects/4/2", "404: 404 page not found", nil) // variable can onlt catch one element
+	check("PUT", "/nice/objects/4/2", "404: 404 page not found", nil) // variable can only catch one element
 	check("PUT", "/nice/objects/4%2F2", "201: created object 4/2", nil)
 	check("PUT", "/nice/objects/4%2F2/", "201: created object 4/2", nil)
+
+	// check VariableIf()
+	isUint32 := func(input string) bool {
+		_, err := strconv.ParseUint(input, 10, 32)
+		return err == nil
+	}
+	m = pr.Element("objects", pr.VariableIf("id", isUint32, pr.Here(pr.Handlers(pr.ByMethod{
+		http.MethodPut: h(http.StatusCreated, "created object $id"),
+	}))))
+
+	check("PUT", "/objects/42", "201: created object 42", nil)
+	check("PUT", "/objects/10000000000", "404: 404 page not found", nil)
+	check("PUT", "/objects/fortytwo", "404: 404 page not found", nil)
 }
 
 func TestPanics(t *testing.T) {
