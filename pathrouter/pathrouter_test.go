@@ -96,6 +96,24 @@ func TestRouting(t *testing.T) {
 	check("GET", "/foo/bar", "200: that's me", nil)
 	check("PUT", "/foo/bar", "201: here I am", nil)
 	check("DELETE", "/foo/bar", "202: goodbye", nil)
+	check("GET", "/foo%2Fbar", "404: 404 page not found", nil)
+
+	// check Elements()
+	m = pr.Elements("foo/bar", pr.Handlers(pr.ByMethod{
+		http.MethodGet:    h(http.StatusOK, "that's me"),
+		http.MethodPut:    h(http.StatusCreated, "here I am"),
+		http.MethodDelete: h(http.StatusAccepted, "goodbye"),
+	}))
+	check("GET", "/", "404: 404 page not found", nil)
+	check("GET", "/foo/", "404: 404 page not found", nil)
+	check("GET", "/foo", "404: 404 page not found", nil)
+	check("GET", "/bar/", "404: 404 page not found", nil)
+	check("GET", "/bar", "404: 404 page not found", nil)
+	check("GET", "/foo/bar/", "404: 404 page not found", nil)
+	check("GET", "/foo/bar", "200: that's me", nil)
+	check("PUT", "/foo/bar", "201: here I am", nil)
+	check("DELETE", "/foo/bar", "202: goodbye", nil)
+	check("GET", "/foo%2Fbar", "404: 404 page not found", nil)
 
 	// check Choice(), different behavior for MethodHead in Handlers()
 	m = pr.Choice(
@@ -123,12 +141,12 @@ func TestRouting(t *testing.T) {
 		pr.Element("one", pr.Handlers(pr.ByMethod{
 			http.MethodGet: h(http.StatusOK, "one $path"),
 		})),
-		pr.Element("two", pr.Element("two", pr.Handlers(pr.ByMethod{
+		pr.Elements("two/two", pr.Handlers(pr.ByMethod{
 			http.MethodGet: h(http.StatusOK, "two $path"),
-		}))),
-		pr.Element("three", pr.Element("three", pr.Element("three", pr.Handlers(pr.ByMethod{
+		})),
+		pr.Elements("three/three/three", pr.Handlers(pr.ByMethod{
 			http.MethodGet: h(http.StatusOK, "three $path"),
-		})))),
+		})),
 	))
 
 	check("GET", "/foo/bar/one", "200: one foo/bar", nil)
@@ -147,9 +165,9 @@ func TestRouting(t *testing.T) {
 		pr.Element("one", pr.Handlers(pr.ByMethod{
 			http.MethodGet: h(http.StatusOK, "one $path"),
 		})),
-		pr.Element("two", pr.Element("two", pr.Handlers(pr.ByMethod{
+		pr.Elements("two/two", pr.Handlers(pr.ByMethod{
 			http.MethodGet: h(http.StatusOK, "two $path"),
-		}))),
+		})),
 	))
 
 	check("GET", "/foo/bar/baz/one", "200: one foo/bar/baz", nil)
@@ -159,9 +177,9 @@ func TestRouting(t *testing.T) {
 	check("GET", "/foo/baz/two/two", "404: 404 page not found", nil)
 
 	// check Variable()
-	m = pr.Element("nice", pr.Element("objects", pr.Variable("id", pr.Here(pr.Handlers(pr.ByMethod{
+	m = pr.Elements("nice/objects", pr.Variable("id", pr.Here(pr.Handlers(pr.ByMethod{
 		http.MethodPut: h(http.StatusCreated, "created object $id"),
-	})))))
+	}))))
 
 	check("PUT", "/nice/objects", "404: 404 page not found", nil)
 	check("PUT", "/nice/objects/", "404: 404 page not found", nil)

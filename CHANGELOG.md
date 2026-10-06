@@ -7,7 +7,7 @@ SPDX-License-Identifier: Apache-2.0
 
 Changes:
 
-- pathrouter: Add CatchAllVariableIf() and VariableIf().
+- pathrouter: Add CatchAllVariableIf(), VariableIf() and Elements().
 
 # v1.18.0 (2026-10-05)
 
