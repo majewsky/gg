@@ -132,6 +132,7 @@ package jsonmatch // import "go.xyrillian.de/gg/jsonmatch"
 
 import (
 	"encoding/json"
+	"encoding/json/jsontext"
 	"errors"
 	"fmt"
 )
@@ -252,8 +253,8 @@ func (d Diff) String() string {
 // Pointer is a JSON pointer (RFC 6901) that references a particular JSON value relative to the root of the encoded JSON payload that was given to DiffAgainst().
 // It appears in type [Diff].
 //
-// This type is intended to become synonymous with encoding/json/jsontext.Pointer once that type is stabilized.
-type Pointer string
+// Deprecated: Use jsontext.Pointer directly.
+type Pointer = jsontext.Pointer
 
 // CaptureField returns a capture slot that can be placed in an [Object] or [Array] instance to capture individual non-deterministic values during an assertion.
 // Please refer to the package documentation for details and usage examples.
