@@ -3,6 +3,12 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.20.0 (TBD), TODO: reason for Go version increase
+
+Changes:
+
+- The minimum Go version was increased from 1.26 to 1.27 because...
+
 # v1.19.0 (2026-10-06)
 
 Changes:

@@ -1,6 +1,6 @@
 module go.xyrillian.de/gg/benchmark
 
-go 1.26
+go 1.27
 
 require (
 	github.com/go-gorp/gorp/v3 v3.1.0

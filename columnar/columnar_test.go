@@ -5,6 +5,7 @@ package columnar_test
 
 import (
 	"encoding/json"
+	"regexp"
 	"sync"
 	"testing"
 
@@ -101,10 +102,11 @@ func TestJSONRoundtripErrors(t *testing.T) {
 		bar int
 	}
 
+	expected := regexp.MustCompile(`columnar_test.nothingPublic has no exported fields$`)
 	_, err := json.Marshal(columnar.List[nothingPublic]{{1, 2}})
-	assert.Equal(t, err.Error(), `json: error calling MarshalJSON for type columnar.List[go.xyrillian.de/gg/columnar_test.nothingPublic·5]: columnar_test.nothingPublic has no exported fields`)
+	assert.ErrEqual(t, err, expected)
 	err = json.Unmarshal([]byte(`{}`), new(columnar.List[nothingPublic]{}))
-	assert.Equal(t, err.Error(), `columnar_test.nothingPublic has no exported fields`)
+	assert.ErrEqual(t, err, expected)
 }
 
 func TestJSONUnmarshalFromInconsistentLengths(t *testing.T) {
