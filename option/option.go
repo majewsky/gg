@@ -111,7 +111,8 @@ package option // import "go.xyrillian.de/gg/option"
 import (
 	"database/sql"
 	"database/sql/driver"
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"iter"
 )
@@ -299,11 +300,11 @@ func (o Option[T]) Xor(other Option[T]) Option[T] {
 // These are static assertions that Option implements the intended interfaces.
 // (The YAML interfaces are not checked because we don't want to add 3rd-party lib deps here.)
 var (
-	_ fmt.Formatter    = Option[bool]{}
-	_ sql.Scanner      = &Option[bool]{}
-	_ driver.Valuer    = Option[bool]{}
-	_ json.Marshaler   = Option[bool]{}
-	_ json.Unmarshaler = &Option[bool]{}
+	_ fmt.Formatter        = Option[bool]{}
+	_ sql.Scanner          = &Option[bool]{}
+	_ driver.Valuer        = Option[bool]{}
+	_ json.MarshalerTo     = Option[bool]{}
+	_ json.UnmarshalerFrom = &Option[bool]{}
 )
 
 // Format implements the [fmt.Formatter] interface.
@@ -353,23 +354,29 @@ func (o Option[T]) Value() (driver.Value, error) {
 	}
 }
 
-// MarshalJSON implements the [json.Marshaler] interface.
-func (o Option[T]) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements the [json.MarshalerTo] interface.
+func (o Option[T]) MarshalJSONTo(enc *jsontext.Encoder) error {
 	if o.isSome {
-		return json.Marshal(o.value)
+		return json.MarshalEncode(enc, o.value)
 	} else {
-		return []byte("null"), nil
+		return enc.WriteToken(jsontext.Null)
 	}
 }
 
-// UnmarshalJSON implements the [json.Unmarshaler] interface.
-func (o *Option[T]) UnmarshalJSON(buf []byte) error {
-	var data *T
-	err := json.Unmarshal(buf, &data)
+// UnmarshalJSONFrom implements the [json.UnmarshalerFrom] interface.
+func (o *Option[T]) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
+	if dec.PeekKind() == jsontext.KindNull {
+		*o = None[T]()
+		_, err := dec.ReadToken()
+		return err
+	}
+
+	var data T
+	err := json.UnmarshalDecode(dec, &data)
 	if err != nil {
 		return err
 	}
-	*o = fromPointer(data)
+	*o = Some(data)
 	return nil
 }
 

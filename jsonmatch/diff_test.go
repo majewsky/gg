@@ -4,7 +4,8 @@
 package jsonmatch_test
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 	"strings"
@@ -24,8 +25,8 @@ var (
 	_ jsonmatch.Diffable = jsonmatch.Scalar("foo")
 	_ jsonmatch.Diffable = jsonmatch.Scalar(42)
 	_ jsonmatch.Diffable = jsonmatch.Scalar(false)
-	_                    = jsonmatch.CaptureField(Some(1).AsPointer()).(json.Marshaler)
-	_                    = jsonmatch.CaptureField(Some(1).AsPointer()).(json.Unmarshaler)
+	_                    = jsonmatch.CaptureField(Some(1).AsPointer()).(json.MarshalerTo)
+	_                    = jsonmatch.CaptureField(Some(1).AsPointer()).(json.UnmarshalerFrom)
 )
 
 func TestCanonicalizesActualPayload(t *testing.T) {
@@ -389,8 +390,8 @@ func TestFailsOnUnmarshalError(t *testing.T) {
 
 type unmarshalableObject struct{}
 
-func (unmarshalableObject) MarshalJSON() ([]byte, error) {
-	return nil, errors.New("this object is unmarshalable")
+func (unmarshalableObject) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return errors.New("this object is unmarshalable")
 }
 
 func TestArrayOnArrayAction(t *testing.T) {

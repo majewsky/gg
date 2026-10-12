@@ -131,8 +131,8 @@
 package jsonmatch // import "go.xyrillian.de/gg/jsonmatch"
 
 import (
-	"encoding/json"
 	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"errors"
 	"fmt"
 )
@@ -287,19 +287,19 @@ type capturedField struct {
 	PointerToTarget any
 }
 
-// MarshalJSON implements the [json.Marshaler] interface by transparently marshaling the contained value.
+// MarshalJSONTo implements the [json.MarshalerTo] interface by transparently marshaling the contained value.
 //
 // This implementation ensures that `capturedField` looks like its payload
 // when serialized for a "type mismatch" or "value mismatch" error message.
-func (f capturedField) MarshalJSON() ([]byte, error) {
-	return json.Marshal(f.PointerToTarget)
+func (f capturedField) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return json.MarshalEncode(enc, f.PointerToTarget)
 }
 
-// UnmarshalJSON implements the [json.Unmarshaler] interface by always throwing an error.
+// UnmarshalJSONFrom implements the [json.UnmarshalerFrom] interface by always throwing an error.
 //
 // This implementation ensures that `capturedField` is not placed into a
 // container that DiffAgainst() does not know how to recurse into.
-func (f capturedField) UnmarshalJSON(buf []byte) error {
+func (f capturedField) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	return errors.New("cannot unmarshal into jsonmatch.CaptureField()")
 }
 
@@ -314,17 +314,17 @@ func Irrelevant() any {
 	return irrelevant{}
 }
 
-// MarshalJSON implements the [json.Marshaler] interface.
+// MarshalJSONTo implements the [json.MarshalerTo] interface.
 //
 // This implementation ensures that `irrelevant` renders in a readable way
 // when a larger value containing it is serialized for a "type mismatch" or "value mismatch" error message.
-func (irrelevant) MarshalJSON() ([]byte, error) {
-	return []byte(`"<irrelevant>"`), nil
+func (irrelevant) MarshalJSONTo(enc *jsontext.Encoder) error {
+	return enc.WriteToken(jsontext.String("<irrelevant>"))
 }
 
 var (
 	// static assertion that the documented interfaces are indeed implemented
-	_ json.Marshaler   = capturedField{}
-	_ json.Unmarshaler = capturedField{}
-	_ json.Marshaler   = irrelevant{}
+	_ json.MarshalerTo     = capturedField{}
+	_ json.UnmarshalerFrom = capturedField{}
+	_ json.MarshalerTo     = irrelevant{}
 )

@@ -29,7 +29,8 @@
 package columnar
 
 import (
-	"encoding/json"
+	"encoding/json/jsontext"
+	"encoding/json/v2"
 	"fmt"
 	"maps"
 	"reflect"
@@ -43,8 +44,8 @@ import (
 
 // prove interface implementations
 var _ interface {
-	json.Marshaler
-	json.Unmarshaler
+	json.MarshalerTo
+	json.UnmarshalerFrom
 } = &List[bool]{}
 
 // cache for auto-generated columnar struct types
@@ -89,8 +90,8 @@ func getColumnarType(t reflect.Type) reflect.Type {
 	return result
 }
 
-// MarshalJSON implements the [json.Marshaler] interface.
-func (l List[T]) MarshalJSON() ([]byte, error) {
+// MarshalJSONTo implements the [json.MarshalerTo] interface.
+func (l List[T]) MarshalJSONTo(enc *jsontext.Encoder) error {
 	t := reflect.TypeFor[T]()
 	for t.Kind() == reflect.Pointer {
 		t = t.Elem()
@@ -106,7 +107,7 @@ func (l List[T]) MarshalJSON() ([]byte, error) {
 	})
 	if len(columns) == 0 {
 		zero := reflect.New(t).Elem().Interface()
-		return nil, fmt.Errorf("%[1]T has no exported fields", zero)
+		return fmt.Errorf("%[1]T has no exported fields", zero)
 	}
 
 	for idx, elem := range l {
@@ -119,11 +120,11 @@ func (l List[T]) MarshalJSON() ([]byte, error) {
 		})
 	}
 
-	return json.Marshal(cv.Interface())
+	return json.MarshalEncode(enc, cv.Interface())
 }
 
-// UnmarshalJSON implements the [json.Unmarshaler] interface.
-func (l *List[T]) UnmarshalJSON(buf []byte) error {
+// UnmarshalJSONFrom implements the [json.UnmarshalerFrom] interface.
+func (l *List[T]) UnmarshalJSONFrom(dec *jsontext.Decoder) error {
 	t := reflect.TypeFor[T]()
 	for t.Kind() == reflect.Pointer {
 		t = t.Elem()
@@ -131,7 +132,7 @@ func (l *List[T]) UnmarshalJSON(buf []byte) error {
 	ct := getColumnarType(t)
 	cv := reflect.New(ct)
 
-	err := json.Unmarshal(buf, cv.Interface())
+	err := json.UnmarshalDecode(dec, cv.Interface())
 	if err != nil {
 		return err
 	}
