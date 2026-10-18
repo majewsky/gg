@@ -4,7 +4,6 @@
 package options
 
 import (
-	"strconv"
 	"testing"
 
 	"go.xyrillian.de/gg/assert"
@@ -20,11 +19,6 @@ func TestIsNoneOrZero(t *testing.T) {
 	assert.Equal(t, IsNoneOrZero(None[int]()), true)
 	assert.Equal(t, IsNoneOrZero(Some(0)), true)
 	assert.Equal(t, IsNoneOrZero(Some(1)), false)
-}
-
-func TestMap(t *testing.T) {
-	assert.Equal(t, Map(None[int](), strconv.Itoa), None[string]())
-	assert.Equal(t, Map(Some(42), strconv.Itoa), Some("42"))
 }
 
 func TestMax(t *testing.T) {

@@ -9,6 +9,8 @@ Changes:
 
 - The minimum Go version was increased from 1.26 to 1.27 to facilitate the use of new APIs surrounding encoding/json/v2.
 - jsonmatch: Pointer is now a synonym for jsontext.Pointer from the standard library.
+- option: Map() from the options package is now available as a method on type Option directly.
+  It is synonymous to options.Map(), which will be deprecated in a future release.
 - All implementations of encoding/json.Marshaler and encoding/json.Unmarshaler on types in this module
   have been replaced with implementations of encoding/json/v2.MarshalerTo and encoding/json/v2.UnmarshalerFrom.
   This is technically a backwards-incompatibility for applications that call these methods directly,

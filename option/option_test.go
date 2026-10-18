@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"slices"
+	"strconv"
 	"testing"
 
 	"go.xyrillian.de/gg/assert"
@@ -72,6 +73,11 @@ func TestIsZero(t *testing.T) {
 func TestIter(t *testing.T) {
 	assert.Equal(t, slices.Collect(None[int]().Iter()), []int(nil))
 	assert.Equal(t, slices.Collect(Some(42).Iter()), []int{42})
+}
+
+func TestMap(t *testing.T) {
+	assert.Equal(t, None[int]().Map(strconv.Itoa), None[string]())
+	assert.Equal(t, Some(42).Map(strconv.Itoa), Some("42"))
 }
 
 func TestOr(t *testing.T) {

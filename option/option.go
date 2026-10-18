@@ -117,6 +117,8 @@ import (
 	"iter"
 )
 
+// TODO: with 1.27 support for type variables on methods, consider additional methods referencing U from Rust's Option type
+
 // Option is a type that contains either one or no instances of T.
 type Option[T any] struct {
 	// NOTE: `None()` must yield the zero value of this type.
@@ -219,6 +221,15 @@ func (o Option[T]) Iter() iter.Seq[T] {
 		return func(yield func(T) bool) { yield(o.value) }
 	} else {
 		return func(yield func(T) bool) {}
+	}
+}
+
+// Map applies the given function to the value contained in o, if there is one.
+func (o Option[T]) Map[U any](mapping func(T) U) Option[U] {
+	if t, ok := o.Unpack(); ok {
+		return Some(mapping(t))
+	} else {
+		return None[U]()
 	}
 }
 
