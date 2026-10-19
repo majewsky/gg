@@ -6,8 +6,11 @@ package pathrouter
 import (
 	"errors"
 	"fmt"
+	"maps"
 	"net/http"
+	"slices"
 	"strings"
+	"unicode"
 
 	. "go.xyrillian.de/gg/option"
 )
@@ -17,6 +20,9 @@ import (
 func Build(build func(Builder)) Matcher {
 	b := builder{Node: choiceNode{}}
 	build(&b)
+	if true {
+		panic("TODO: how would middlewares be encoded (see TODO in matcher.go)?")
+	}
 	return b.Node.Into(b.Predicates)
 }
 
@@ -74,17 +80,103 @@ func (b *builder) AddRoute(method, pathTemplate string, handler http.HandlerFunc
 	b.Node = b.Node.TryMerge(node).UnwrapOrPanic("choiceNode.TryMerge() should never fail")
 }
 
-func (b *builder) buildRoute(method, pathTemplate string, handler http.HandlerFunc) (builderNode, error) {
+func (b *builder) buildRoute(method, pathTemplate string, handler http.HandlerFunc) (node builderNode, err error) {
 	if handler == nil && method != http.MethodHead {
 		return nil, errors.New("handler must not be nil")
 	}
-	cut, ok := strings.CutPrefix(pathTemplate, "/")
+
+	// consume leading slash
+	var ok bool
+	pathTemplate, ok = strings.CutPrefix(pathTemplate, "/")
 	if !ok {
 		return nil, errors.New("path template does not have a leading slash")
 	}
 
-	// TODO: phase 1: parse `pathTemplate` into a sequence of path nodes leading to a handler node
-	panic("TODO")
+	// consume required trailing slash
+	hn := handlerNode{
+		Handlers: map[string]http.HandlerFunc{method: handler},
+	}
+	pathTemplate, ok = strings.CutSuffix(pathTemplate, "(/)")
+	if ok {
+		hn.Attributes.IsHere = true
+	}
+
+	// consume optional trailing slash if there was no required trailing slash
+	node = hn
+	if !ok {
+		pathTemplate, ok = strings.CutSuffix(pathTemplate, "/")
+		if ok {
+			node = pathNode{
+				Inner:      node,
+				Attributes: pathNodeAttributes{Element: "/"},
+			}
+		}
+	}
+
+	// now only the bare path remains in pathTemplate, e.g. `/v1/foo/bar(/)` -> `v1/foo/bar`
+	for _, elem := range slices.Backward(strings.Split(pathTemplate, "/")) {
+		node, err = b.buildPathNode(elem, node)
+		if err != nil {
+			return nil, fmt.Errorf("invalid path element %q in path %q: %w", elem, pathTemplate, err)
+		}
+	}
+	return node, nil
+}
+
+func (b *builder) buildPathNode(template string, inner builderNode) (_ builderNode, err error) {
+	// try to parse a variable declaration
+	var (
+		isVariable = false
+		isCatchAll = false
+		ok         bool
+	)
+	if template, ok = strings.CutPrefix(template, ":"); ok {
+		isVariable = true
+	} else if template, ok = strings.CutPrefix(template, ":"); ok {
+		isVariable = true
+		isCatchAll = true
+	}
+	if isVariable {
+		var (
+			attrs        = pathNodeAttributes{IsCatchAll: isCatchAll}
+			hasPredicate bool
+		)
+		attrs.VariableName, attrs.PredicateName, hasPredicate = strings.Cut(template, "?")
+		if !isASCIIAlphanumeric(attrs.VariableName) {
+			return nil, fmt.Errorf("variable name %q contains invalid characters", attrs.VariableName)
+		}
+		if hasPredicate {
+			if attrs.PredicateName == "" {
+				return nil, errors.New("predicate name may not be empty")
+			}
+			if !isASCIIAlphanumeric(attrs.PredicateName) {
+				return nil, fmt.Errorf("predicate name %q contains invalid characters", attrs.PredicateName)
+			}
+			if _, ok := b.Predicates[attrs.PredicateName]; !ok {
+				return nil, fmt.Errorf("predicate %q is not defined", attrs.PredicateName)
+			}
+		}
+		return pathNode{inner, attrs}, nil
+	}
+
+	// try to parse an element declaration
+	if !isASCIIAlphanumeric(template) {
+		return nil, fmt.Errorf("element %q contains invalid characters", template)
+	}
+	attrs := pathNodeAttributes{Element: template}
+	return pathNode{inner, attrs}, nil
+}
+
+func isASCIIAlphanumeric(in string) bool {
+	for _, r := range in {
+		if r > unicode.MaxASCII {
+			return false
+		}
+		if !unicode.IsLetter(r) && !unicode.IsDigit(r) {
+			return false
+		}
+	}
+	return true
 }
 
 // AddPredicate implements the [Builder] interface.
@@ -147,15 +239,21 @@ type pathNodeAttributes struct {
 
 // TryMerge implements the [node] interface.
 func (n pathNode) TryMerge(other builderNode) Option[builderNode] {
-	if rhs, ok := other.(pathNode); ok && n.Attributes == rhs.Attributes {
-		if merged, ok := n.Inner.TryMerge(rhs.Inner).Unpack(); ok {
-			return Some[builderNode](pathNode{merged, n.Attributes})
-		}
+	rhs, ok := other.(pathNode)
+	if !ok || n.Attributes != rhs.Attributes {
+		return None[builderNode]()
 	}
-	return None[builderNode]()
+
+	// if both sides have identical path nodes, we will always force a merge,
+	// possibly by spawning a choice node inside
+	merged, ok := n.Inner.TryMerge(rhs.Inner).Unpack()
+	if !ok {
+		merged = choiceNode{n.Inner, rhs.Inner}
+	}
+	return Some[builderNode](pathNode{merged, n.Attributes})
 }
 
-// TryMerge implements the [node] interface.
+// Into implements the [node] interface.
 func (n pathNode) Into(predicates map[string]func(string) bool) Matcher {
 	var (
 		inner = n.Inner.Into(predicates)
@@ -172,6 +270,29 @@ func (n pathNode) Into(predicates map[string]func(string) bool) Matcher {
 }
 
 type handlerNode struct {
-	IsHere   bool
-	Handlers map[string]http.HandlerFunc
+	Handlers   map[string]http.HandlerFunc
+	Attributes handlerNodeAttributes
+}
+
+type handlerNodeAttributes struct {
+	IsHere bool
+}
+
+// TryMerge implements the [node] interface.
+func (n handlerNode) TryMerge(other builderNode) Option[builderNode] {
+	if rhs, ok := other.(handlerNode); ok && n.Attributes == rhs.Attributes {
+		maps.Copy(n.Handlers, rhs.Handlers)
+		return Some[builderNode](n)
+	} else {
+		return None[builderNode]()
+	}
+}
+
+// Into implements the [node] interface.
+func (n handlerNode) Into(predicates map[string]func(string) bool) Matcher {
+	result := Handlers(n.Handlers)
+	if n.Attributes.IsHere {
+		result = Here(result)
+	}
+	return result
 }
