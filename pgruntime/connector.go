@@ -136,7 +136,7 @@ func (c Connector[T]) ConnectForTest(t assert.TestingTB, behavior ConnectionBeha
 
 func createDatabaseIfMissing(ctx context.Context, db gsql.Handle, dbName string) error {
 	// check if database exists
-	exists, err := selectOneValue[bool](ctx, db, `SELECT COUNT(*) > 0 FROM pg_catalog.pg_database WHERE datname = $1`, dbName)
+	exists, err := oblast.SelectOne[bool](ctx, db, `SELECT COUNT(*) > 0 FROM pg_catalog.pg_database WHERE datname = $1`, dbName)
 	if err != nil {
 		return fmt.Errorf("while reading from pg_catalog.pg_database: %w", err)
 	}

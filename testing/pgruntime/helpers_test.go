@@ -31,17 +31,3 @@ func queryRow(ctx context.Context, db gsql.Handle, query string, args, slots []a
 	err = stmt.QueryRow(ctx, args, slots)
 	return errext.WithCleanup(err, "stmt.Close", stmt.Close())
 }
-
-// Convenience function for executing a one-off SQL query returning one value.
-// TODO: move to gsql
-func selectOneValue[T any](ctx context.Context, db gsql.Handle, query string, args ...any) (T, error) {
-	stmt, err := db.GSQLPrepare(ctx, query, false)
-	if err != nil {
-		var none T
-		return none, err
-	}
-
-	var result T
-	err = stmt.QueryRow(ctx, args, []any{&result})
-	return result, errext.WithCleanup(err, "stmt.Close", stmt.Close())
-}

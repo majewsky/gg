@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"go.xyrillian.de/gg/assert"
+	"go.xyrillian.de/gg/oblast"
 )
 
 func TestMultipleConnectionsToSameDB(t *testing.T) {
@@ -31,7 +32,7 @@ func TestMultipleConnectionsToSameDB(t *testing.T) {
 	if err != nil {
 		t.Fatal(err.Error())
 	}
-	barID, err := selectOneValue[int64](ctx, db2, `SELECT id FROM objects WHERE name = $1`, "bar")
+	barID, err := oblast.SelectOne[int64](ctx, db2, `SELECT id FROM objects WHERE name = $1`, "bar")
 	if assert.ErrEqual(t, err, nil) {
 		assert.Equal(t, barID, 2)
 	}
@@ -44,7 +45,7 @@ func TestMultipleConnectionsToSameDB(t *testing.T) {
 	if assert.ErrEqual(t, err, nil) {
 		assert.Equal(t, count, 0)
 	}
-	nextID, err := selectOneValue[int64](ctx, db3, `INSERT INTO objects (name) VALUES ($1) RETURNING id`, "qux")
+	nextID, err := oblast.SelectOne[int64](ctx, db3, `INSERT INTO objects (name) VALUES ($1) RETURNING id`, "qux")
 	if assert.ErrEqual(t, err, nil) {
 		assert.Equal(t, nextID, 1) // sequence was reset and starts at 1 again
 	}

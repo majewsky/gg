@@ -9,6 +9,7 @@ import (
 	"slices"
 
 	"go.xyrillian.de/gg/gsql"
+	"go.xyrillian.de/gg/oblast"
 )
 
 // ConnectionBehavior contains configuration for [Connector.Connect] and [Connector.ConnectForTest].
@@ -68,7 +69,7 @@ func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations m
 	}
 
 	// read schema_migrations table
-	rowCount, err := selectOneValue[int64](ctx, db, `SELECT COUNT(*) FROM schema_migrations`)
+	rowCount, err := oblast.SelectOne[int64](ctx, db, `SELECT COUNT(*) FROM schema_migrations`)
 	if err != nil {
 		return fmt.Errorf("could not check row count for schema_migrations: %w", err)
 	}

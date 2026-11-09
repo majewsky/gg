@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"go.xyrillian.de/gg/assert"
+	"go.xyrillian.de/gg/oblast"
 	"go.xyrillian.de/gg/pgruntime"
 )
 
@@ -45,7 +46,7 @@ func TestMigrations(t *testing.T) {
 	db, target := connector.ConnectForTest(t, b)
 
 	// check that the schema is applied by inserting some basic records
-	postID, err := selectOneValue[int64](ctx, db, `INSERT INTO posts (message) VALUES ($1) RETURNING id`, "Hello World!")
+	postID, err := oblast.SelectOne[int64](ctx, db, `INSERT INTO posts (message) VALUES ($1) RETURNING id`, "Hello World!")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
@@ -68,7 +69,7 @@ func TestMigrations(t *testing.T) {
 	}
 
 	// check that the data was modified appropriately
-	message, err := selectOneValue[string](ctx, db, `SELECT message FROM comments`)
+	message, err := oblast.SelectOne[string](ctx, db, `SELECT message FROM comments`)
 	if assert.ErrEqual(t, err, nil) {
 		assert.Equal(t, message, "Hi there. in response to: Hello World!")
 	}
@@ -81,11 +82,11 @@ func TestMigrations(t *testing.T) {
 	assert.ErrEqual(t, err, `while migrating to schema version 51: could not execute schema migration: pq: relation "commands" does not exist (42P01)`)
 
 	// check that the migration was not applied
-	version, err := selectOneValue[int64](ctx, db, `SELECT version FROM schema_migrations`)
+	version, err := oblast.SelectOne[int64](ctx, db, `SELECT version FROM schema_migrations`)
 	if assert.ErrEqual(t, err, nil) {
 		assert.Equal(t, version, 50)
 	}
-	commentCount, err := selectOneValue[int64](ctx, db, `SELECT COUNT(*) FROM comments`)
+	commentCount, err := oblast.SelectOne[int64](ctx, db, `SELECT COUNT(*) FROM comments`)
 	if assert.ErrEqual(t, err, nil) {
 		assert.Equal(t, commentCount, 1)
 	}
