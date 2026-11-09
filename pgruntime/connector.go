@@ -15,6 +15,7 @@ import (
 	"go.xyrillian.de/gg/assert"
 	"go.xyrillian.de/gg/errext"
 	"go.xyrillian.de/gg/gsql"
+	"go.xyrillian.de/gg/oblast"
 )
 
 // Connector describes how to connect to a PostgreSQL database given a [libpq-style connection URI].
@@ -158,7 +159,7 @@ func resetTestDatabase(ctx context.Context, db gsql.Handle, params testSetupPara
 		condition += ` AND table_name != 'schema_migrations'`
 	}
 	query := fmt.Sprintf(`SELECT quote_ident(table_name) FROM information_schema.tables WHERE %s ORDER BY table_name`, condition)
-	quotedTableNames, err := selectSeveralValues[string](ctx, db, query)
+	quotedTableNames, err := oblast.Select[string](ctx, db, query).Collect()
 	if err != nil {
 		return fmt.Errorf("while listing tables to truncate: %w", err)
 	}
