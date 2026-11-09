@@ -3,6 +3,13 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.21.0 (TBD)
+
+Changes:
+
+- oblast: Add type RuntimeIndex.
+  I am done contemplating the method naming on this type, and decided that I am fine with it as-is.
+
 # v1.20.0 (2026-11-10)
 
 Changes:
