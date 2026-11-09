@@ -143,7 +143,7 @@ func createDatabaseIfMissing(ctx context.Context, db gsql.Handle, dbName string)
 
 	// create database if necessary
 	if !exists {
-		_, err = execQuery(ctx, db, "CREATE DATABASE "+quoteIdentifier(dbName), nil)
+		_, err = gsql.Exec(ctx, db, "CREATE DATABASE "+quoteIdentifier(dbName))
 		if err != nil {
 			return fmt.Errorf("during CREATE DATABASE: %w", err)
 		}
@@ -167,7 +167,7 @@ func resetTestDatabase(ctx context.Context, db gsql.Handle, params testSetupPara
 	// truncate all tables at once
 	if len(quotedTableNames) > 0 {
 		query = fmt.Sprintf(`TRUNCATE %s RESTART IDENTITY CASCADE`, strings.Join(quotedTableNames, ", "))
-		_, err = execQuery(ctx, db, query, nil)
+		_, err = gsql.Exec(ctx, db, query)
 		if err != nil {
 			return fmt.Errorf("during %s: %w", query, err)
 		}

@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"go.xyrillian.de/gg/assert"
+	"go.xyrillian.de/gg/gsql"
 	"go.xyrillian.de/gg/oblast"
 )
 
@@ -21,7 +22,7 @@ func TestMultipleConnectionsToSameDB(t *testing.T) {
 		`INSERT INTO objects (name) VALUES ('foo')`, // -> id = 1
 		`INSERT INTO objects (name) VALUES ('bar')`, // -> id = 2
 	} {
-		_, err := execQuery(ctx, db1, query, nil)
+		_, err := gsql.Exec(ctx, db1, query)
 		if err != nil {
 			t.Fatalf("in query %q: %s", query, err.Error())
 		}

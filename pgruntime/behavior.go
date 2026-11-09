@@ -63,7 +63,7 @@ func (b ConnectionBehavior) applyTo(ctx context.Context, db gsql.ConnectionHandl
 
 func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations map[int64]string) error {
 	// apply schema_migrations table schema
-	_, err := execQuery(ctx, db, MigrationsSchema, nil)
+	_, err := gsql.Exec(ctx, db, MigrationsSchema)
 	if err != nil {
 		return fmt.Errorf("could not apply schema_migrations table schema: %w", err)
 	}
@@ -81,7 +81,7 @@ func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations m
 	switch rowCount {
 	case 0:
 		record.CurrentVersion = 0
-		_, err = execQuery(ctx, db, `INSERT INTO schema_migrations (version, dirty) VALUES (0, FALSE)`, nil)
+		_, err = gsql.Exec(ctx, db, `INSERT INTO schema_migrations (version, dirty) VALUES (0, FALSE)`)
 		if err != nil {
 			return fmt.Errorf("could not initialize schema_migrations record: %w", err)
 		}
@@ -126,11 +126,11 @@ func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations m
 			}
 
 			// perform the next migration
-			_, err = execQuery(ctx, db, migrations[version], nil)
+			_, err = gsql.Exec(ctx, db, migrations[version])
 			if err != nil {
 				return fmt.Errorf("could not execute schema migration: %w", err)
 			}
-			_, err = execQuery(ctx, db, `UPDATE schema_migrations SET version = $1, dirty = FALSE`, []any{version})
+			_, err = gsql.Exec(ctx, db, `UPDATE schema_migrations SET version = $1, dirty = FALSE`, version)
 			if err != nil {
 				return fmt.Errorf("could not update schema_migrations record: %w", err)
 			}

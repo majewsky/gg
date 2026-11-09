@@ -15,6 +15,7 @@ Changes:
   have been replaced with implementations of encoding/json/v2.MarshalerTo and encoding/json/v2.UnmarshalerFrom.
   This is technically a backwards-incompatibility for applications that call these methods directly,
   but all actual users call these functions indirectly through encoding/json or encoding/json/v2.
+- gsql: Add Exec().
 
 # v1.19.0 (2026-10-06)
 

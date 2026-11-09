@@ -7,6 +7,7 @@ import (
 	"testing"
 
 	"go.xyrillian.de/gg/assert"
+	"go.xyrillian.de/gg/gsql"
 	"go.xyrillian.de/gg/oblast"
 	"go.xyrillian.de/gg/pgruntime"
 )
@@ -17,7 +18,7 @@ func TestMigrations(t *testing.T) {
 	// reset the test DB to empty if it exists
 	db, _ := connector.ConnectForTest(t, defaultBehavior)
 	for _, tableName := range []string{"comments", "posts", "schema_migrations"} {
-		_, err := execQuery(ctx, db, `DROP TABLE IF EXISTS `+tableName, nil)
+		_, err := gsql.Exec(ctx, db, `DROP TABLE IF EXISTS `+tableName)
 		if err != nil {
 			t.Fatal(err.Error())
 		}
@@ -50,7 +51,7 @@ func TestMigrations(t *testing.T) {
 	if err != nil {
 		t.Fatal(err.Error())
 	}
-	_, err = execQuery(ctx, db, `INSERT INTO comments (post_id, message) VALUES ($1, $2)`, []any{postID, "Hi there."})
+	_, err = gsql.Exec(ctx, db, `INSERT INTO comments (post_id, message) VALUES ($1, $2)`, postID, "Hi there.")
 	if err != nil {
 		t.Fatal(err.Error())
 	}
