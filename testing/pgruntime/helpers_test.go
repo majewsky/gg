@@ -21,13 +21,3 @@ func execQuery(ctx context.Context, db gsql.Handle, query string, args []any) (s
 	result, err := stmt.Exec(ctx, args)
 	return result, errext.WithCleanup(err, "stmt.Close", stmt.Close())
 }
-
-// Convenience function for executing a one-off SQL query returning one row.
-func queryRow(ctx context.Context, db gsql.Handle, query string, args, slots []any) error {
-	stmt, err := db.GSQLPrepare(ctx, query, false)
-	if err != nil {
-		return err
-	}
-	err = stmt.QueryRow(ctx, args, slots)
-	return errext.WithCleanup(err, "stmt.Close", stmt.Close())
-}

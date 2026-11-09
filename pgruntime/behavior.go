@@ -73,19 +73,20 @@ func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations m
 	if err != nil {
 		return fmt.Errorf("could not check row count for schema_migrations: %w", err)
 	}
-	var (
-		currentVersion int64
-		dirty          bool
-	)
+	type schemaMigrationsRecord struct {
+		CurrentVersion int64
+		Dirty          bool
+	}
+	var record schemaMigrationsRecord
 	switch rowCount {
 	case 0:
-		currentVersion = 0
+		record.CurrentVersion = 0
 		_, err = execQuery(ctx, db, `INSERT INTO schema_migrations (version, dirty) VALUES (0, FALSE)`, nil)
 		if err != nil {
 			return fmt.Errorf("could not initialize schema_migrations record: %w", err)
 		}
 	case 1:
-		err = queryRow(ctx, db, `SELECT version, dirty FROM schema_migrations`, nil, []any{&currentVersion, &dirty})
+		record, err = oblast.TupleSelectOne[schemaMigrationsRecord](ctx, db, `SELECT version, dirty FROM schema_migrations`)
 		if err != nil {
 			return fmt.Errorf("could not read schema_migrations record: %w", err)
 		}
@@ -94,15 +95,15 @@ func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations m
 			return fmt.Errorf("expected 1 record in schema_migrations table, but found %d records", rowCount)
 		}
 	}
-	if dirty {
+	if record.Dirty {
 		// NOTE: defense in depth: this can never occur when only using pgruntime, but may occur when migrating from golang-migrate
-		return fmt.Errorf("schema_migrations is marked as dirty (version = %d)", currentVersion)
+		return fmt.Errorf("schema_migrations is marked as dirty (version = %d)", record.CurrentVersion)
 	}
 
 	// find migrations to apply
 	var pendingVersions []int64
 	for version := range migrations {
-		if version > currentVersion {
+		if version > record.CurrentVersion {
 			pendingVersions = append(pendingVersions, version)
 		}
 	}
@@ -112,8 +113,7 @@ func applyMigrations(ctx context.Context, db gsql.ConnectionHandle, migrations m
 	for _, version := range pendingVersions {
 		err := db.GSQLTransact(ctx, func(tx gsql.Handle) error {
 			// ensure that nobody else is migrating until we are done
-			var actualVersion int64
-			err := queryRow(ctx, db, `SELECT version FROM schema_migrations FOR UPDATE`, nil, []any{&actualVersion})
+			actualVersion, err := oblast.SelectOne[int64](ctx, db, `SELECT version FROM schema_migrations FOR UPDATE`)
 			if err != nil {
 				return fmt.Errorf("could not obtain lock for schema migration: %w", err)
 			}

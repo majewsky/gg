@@ -40,8 +40,7 @@ func TestMultipleConnectionsToSameDB(t *testing.T) {
 	// another connection with ConnectForTest() should truncate all tables and reset all sequences
 	db3, target2 := connector.ConnectForTest(t, defaultBehavior)
 	assert.Equal(t, target, target2)
-	var count int64
-	err = queryRow(ctx, db3, `SELECT COUNT(*) FROM objects`, nil, []any{&count})
+	count, err := oblast.SelectOne[int64](ctx, db3, `SELECT COUNT(*) FROM objects`)
 	if assert.ErrEqual(t, err, nil) {
 		assert.Equal(t, count, 0)
 	}
