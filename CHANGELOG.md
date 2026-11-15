@@ -3,6 +3,13 @@ SPDX-FileCopyrightText: 2026 Stefan Majewsky <majewsky@gmx.net>
 SPDX-License-Identifier: Apache-2.0
 -->
 
+# v1.22.0 (TBD)
+
+Changes:
+
+- gsql: Add func WithPreparedStatement.
+- oblast: Add func SelectTwo, SelectThree.
+
 # v1.21.0 (2026-11-10)
 
 Changes:
