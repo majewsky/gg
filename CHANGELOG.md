@@ -8,7 +8,6 @@ SPDX-License-Identifier: Apache-2.0
 Changes:
 
 - gsql: Add func WithPreparedStatement.
-- oblast: Add func SelectTwo, SelectThree.
 
 # v1.21.0 (2026-11-10)
 
